@@ -14,10 +14,10 @@ Este entorno de escritorio es el que uso en el dia dia.
 
 Descargue y ejecute el sript en bash con el siguiente comando:
 ```
-bash personalizador.sh
+bash SchoolHack.sh
 ```
 <p align="left">
-<img src="images-readme/inicio.JPG"
+<img src="images-readme/Script.PNG"
 	alt="Tool Design"
 	width="700"/>
 </p>
@@ -69,7 +69,4 @@ Finalmente, te pedirá si quieres reiniciar el equipo
 ## Autor ✒️
 * **David Ojeda Guijarro**
 
-* Inspirado en [**s4vitar**](https://www.youtube.com/watch?v=MF4qRSedmEs)
-
-
-#### Construido en bash 🛠️
+#### Para la creación de las máquinas se ha utilizado docker 🛠️
