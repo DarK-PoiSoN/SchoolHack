@@ -60,7 +60,7 @@ function accion(x, y)
 						
 						}
 						else{
-							
+							document.getElementsByClassName("boton2")[0].disabled = true
 							document.getElementsByClassName("enlace")[0].innerText = "http://schoolhack.local:8000";
 							document.getElementsByClassName("enlace")[0].setAttribute("href","http://schoolhack.local:8000");
 							swal("Reinicio completado", "La máquina se ha reiniciado", "success");
@@ -105,7 +105,7 @@ function accion(x, y)
 						
 						}
 						else{
-							
+							document.getElementsByClassName("boton2")[1].disabled = true
 							document.getElementsByClassName("enlace")[1].innerText = "http://schoolhack.local:8001";
 							document.getElementsByClassName("enlace")[1].setAttribute("href","http://schoolhack.local:8001");
 							swal("Reinicio completado", "La máquina se ha reiniciado", "success");
@@ -145,7 +145,7 @@ function accion(x, y)
 							swal("Encendido", "La máquina se ha encendido", "success");
 						}
 						else{
-							
+							document.getElementsByClassName("boton2")[2].disabled = true
 							document.getElementsByClassName("enlace")[2].innerText = "http://schoolhack.local:8002";
 							document.getElementsByClassName("enlace")[2].setAttribute("href","http://schoolhack.local:8002");
 							swal("Reinicio completado", "La máquina se ha reiniciado", "success");
@@ -184,7 +184,7 @@ function accion(x, y)
 							swal("Encendido", "La máquina se ha encendido", "success");
 						}
 						else {
-							
+							document.getElementsByClassName("boton2")[3].disabled = true
 							document.getElementsByClassName("enlace")[3].innerText = "http://schoolhack.local:8003";
 							document.getElementsByClassName("enlace")[3].setAttribute("href","http://schoolhack.local:8003");
 							swal("Reinicio completado", "La máquina se ha reiniciado", "success");
@@ -224,7 +224,7 @@ function accion(x, y)
 							swal("Encendido", "La máquina se ha encendido", "success");
 						}
 						else {
-							
+							document.getElementsByClassName("boton2")[4].disabled = true
 							document.getElementsByClassName("enlace")[4].innerText = "http://schoolhack.local:8004";
 							document.getElementsByClassName("enlace")[4].setAttribute("href","http://schoolhack.local:8004");
 							swal("Reinicio completado", "La máquina se ha reiniciado", "success");
