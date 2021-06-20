@@ -15,8 +15,8 @@ Descargue y ejecute el sript en bash con el siguiente comando:
 ```
 bash SchoolHack.sh
 ```
-<p align="left">
-<img src="images-readme/Script.PNG"
+<p align="center">
+<img src="images-readme/Script.png"
 	alt="SchoolHack"
 	width="700"/>
 </p>
@@ -46,7 +46,7 @@ Una vez accedas a http://scholhack.local te encontrarás con una interfaz muy ag
 
 Sección de aprendizaje:
 
-<p align="left">
+<p align="center">
 <img src="images-readme/aprender.PNG"
 	alt="Aprender"
 	width="700"/>
@@ -54,7 +54,7 @@ Sección de aprendizaje:
 
 Laboratorio:
 
-<p align="left">
+<p align="center">
 <img src="images-readme/laboratorio.PNG"
 	alt="Laboratorio"
 	width="700"/>
