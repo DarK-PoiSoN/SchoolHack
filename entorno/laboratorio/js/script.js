@@ -24,7 +24,7 @@ function accion(x, y)
 					//lfi
 					if (x == "lfi") {
 						if(y == "descargar") {
-							
+							document.getElementsByClassName("boton2")[0].disabled = true
 							document.getElementsByClassName("enlace")[0].innerText = "http://schoolhack.local:8000";
 							document.getElementsByClassName("enlace")[0].setAttribute("href","http://schoolhack.local:8000");
 							swal("Descargado", "La máquina se ha descargado correctamente", "success");
@@ -70,7 +70,7 @@ function accion(x, y)
 					//Log poisoning
 					else if (x == "lp") {
 						if(y == "descargar") {
-							
+							document.getElementsByClassName("boton2")[1].disabled = true
 							document.getElementsByClassName("enlace")[1].innerText = "http://schoolhack.local:8001";
 							document.getElementsByClassName("enlace")[1].setAttribute("href","http://schoolhack.local:8001");
 							swal("Descargado", "La máquina se ha descargado correctamente", "success");
@@ -116,7 +116,7 @@ function accion(x, y)
 					//Remote file inclusion
 					else if (x == "rfi") {
 						if(y == "descargar") {
-							
+							document.getElementsByClassName("boton2")[2].disabled = true
 							document.getElementsByClassName("enlace")[2].innerText = "http://schoolhack.local:8002";
 							document.getElementsByClassName("enlace")[2].setAttribute("href","http://schoolhack.local:8002");
 							swal("Descargado", "La máquina se ha descargado correctamente", "success");
@@ -155,7 +155,7 @@ function accion(x, y)
 					//SQL Injection
 					else if (x == "isql") {
 						if(y == "descargar") {
-							
+							document.getElementsByClassName("boton2")[3].disabled = true
 							document.getElementsByClassName("enlace")[3].innerText = "http://schoolhack.local:8003";
 							document.getElementsByClassName("enlace")[3].setAttribute("href","http://schoolhack.local:8003");
 							swal("Descargado", "La máquina se ha descargado correctamente", "success");
@@ -195,6 +195,7 @@ function accion(x, y)
 					//Fuerza bruta
 					else if (x == "bf") {
 						if(y == "descargar") {
+							document.getElementsByClassName("boton2")[4].disabled = true
 							document.getElementsByClassName("enlace")[4].innerText = "http://schoolhack.local:8004";
 							document.getElementsByClassName("enlace")[4].setAttribute("href","http://schoolhack.local:8004");
 							swal("Descargado", "La máquina se ha descargado correctamente", "success");
