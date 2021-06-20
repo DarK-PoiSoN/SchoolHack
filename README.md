@@ -7,6 +7,8 @@ Este script te permite desplegar en cuestión de segundos un entorno lleno de m�
 	width="200"/>
 </p>
 
+
+
 ## Comenzando 🚀
 
 Descargue y ejecute el sript en bash con el siguiente comando:
@@ -33,6 +35,7 @@ Este script se ha testeado en los siguentes sitemas operativos:
 • Ubuntu
 
 
+
 ## Instrucciones 📖
 
 La primera vez que ejecutes el script te levantará el entorno web y se ocupará de instalar todas las utilidades y dependencias necesarias para el correcto funcionamiento de SchoolHack. Al acabar su ejecución, informará al usuario de que es necesario reiniciar el equipo.
@@ -41,6 +44,21 @@ La segunda vez que ejecutes el script, este comprobará que todo este correctame
 
 Una vez accedas a http://scholhack.local te encontrarás con una interfaz muy agradable e intuitaba.
 
+Sección de aprendizaje:
+
+<p align="left">
+<img src="images-readme/aprender.PNG"
+	alt="Aprender"
+	width="700"/>
+</p>
+
+Laboratorio:
+
+<p align="left">
+<img src="images-readme/laboratorio.PNG"
+	alt="Laboratorio"
+	width="700"/>
+</p>
 
 ## Autor ✒️
 * **David Ojeda Guijarro**
