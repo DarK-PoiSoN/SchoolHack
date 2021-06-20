@@ -18,7 +18,7 @@ function accion(x, y)
 			document.getElementById("cargando").style.display = "block";
 			$.ajax({
 				type:'POST', //aqui puede ser igual get
-				url: 'http://localhost/laboratorio/docker/docker.php',//aqui va tu direccion donde esta tu funcion php
+				url: 'http://schoolhack.local/laboratorio/docker/docker.php',//aqui va tu direccion donde esta tu funcion php
 				data: {vuln:x,accion:y},//aqui tus datos
 				success:function(data){
 					//lfi
