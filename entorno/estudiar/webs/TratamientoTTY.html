@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="es-ES">	
+    <head>
+  	<title>Tratamiento de la TTY</title>
+    	<meta charset="utf-8">
+    	<link rel="icon" type="image/png" href="../../img/logo.png" />
+      	<link rel="stylesheet" href="../decoration/style.css"/>
+    </head>
+  	<body>
+      	<div class="cuerpo">
+        	<div class="contenido">
+		        <h1 align="center">Tratamiento de la TTY</h1><br><br>
+
+		        <p>Cuando obtenemos una reverse-shell de un equipo víctima, nos encontraremos con los siguientes inconvenientes:</p><br>
+
+		        <ul type="circle">
+		        	<li>Perdida de la shell cuando pulsamos CTRL + C</li>
+		        	<li>El Stderr, el Stdout e incluso el prompt de la terminal no se muestran de manera adecuada debido a la diferencia de proporciones entre la shell que se te otorga y la propia shell de tu sistema</li>
+		        	<li>No se tiene interactividad con las flechas u otros atajos del teclado</li>
+		     	</ul><br>
+
+		        <p>Hay alguna que otra desventaja más, pero las principales ya están mencionadas.</p><br>
+
+		        <p>Son por estas desventajas por lo que se deben seguir unos pasos muy sencillos y rápidos para mejorar la interactividad de la terminal con el fin de que nos resulte más sencillo trabajar con esta.</p><br>
+		        
+		        <p>Comúnmente, cuando obtenemos una shell lo hacemos como el usuario www-data</p><br>
+
+		        <img src="../imagenes/whoami.PNG" alt="whoami">
+
+		        <p>No tenemos podemos usar el manejo de las flechitas.</p><br>
+
+		        <img src="../imagenes/flechitas.PNG" alt="flechitas">
+
+		        <p>Tampoco podemos limpiar la pantalla con el atajo (CTRL + L).</p><br>
+
+		        <img src="../imagenes/ctrl-l.PNG" alt="ctrl-l">
+
+		        <p>Lo primero que debemos de hacer es desplegarnos una pseudo consola:</p><br>
+		        
+		        <pre rel="terminal" ><code><font size="3" color="red">~$</font> script /dev/null -c bash</code></pre><br>
+		        
+		        <p>Cabe una mínima posibilidad de que no podamos desplegar una pseudo consala de la forma anterior, por ello dejo aquí otra forma.</p><br>
+
+		        <p>Como he dicho es muy improbable que se nos complique a la hora de desplegar esta pseudoconsola, pero nunca viene mal saber hacer la misma cosa de diferentes formas.</p><br>
+
+		        <p>De segundo paso, una vez tengamos esta pseudo consola, damos pulsar Ctrl + Z dejar en segundo plano la sesión y tras esto, en nuestra terminal ejecutamos:</p><br>
+
+		        <pre rel="terminal"><code><font size="3" color="red">~$</font> stty raw -echo; fg</code></pre><br>
+				
+				<p>Esto es imprescindible ejecutarlo en un one liner siempre y cuando estemos manejando una ZSH como shell, en caso de BASH, no habría problema en ponerlo en líneas independientes, pero debemos recordar que, al ejecutar el primer comando, lo que tipeemos después no se mostrara por pantalla, es decir, no veremos lo que estamos escribiendo. Con el segundo comando, volveremos a la sesión que hemos dejado en segundo plano. Después tipearemos:</p><br>
+
+				<pre rel="terminal"><code><font size="3" color="red">~$</font> reset</code></pre><br>	        
+		        
+		        <p>Esto nos permitirá reiniciar la configuración de la consola. Recordemos que no veremos lo que estamos escribiendo, finalmente le damos al <strong>Enter</strong></p><br>		
+
+		        <p>Seguidamente nos preguntará que qué tipo de terminal queremos usar, le indicaremos <srtong>xterm</srtong></p><br>
+				
+				<p>Hecho esto apareceremos en una nueva consola, pero veremos que el valor del tipo de terminal que queremos usar se ha resetado a dumb, por lo que la exportaremos de nuevo y aprovecharemos para definir el tipo de shell.</p><br>
+
+				<pre rel="consola" ><code><font size="3" color="red">~$</font> export TERM=xterm
+<font size="3" color="red">~$</font> export SHELL=bash</code></pre><br>	   
+
+				<p>Finalmente, solo nos queda solucionar el tema de las proporciones. Para ello, nos abrimos una terminal en nuestro equipo y ejecutamos el comando:</p><br>
+				
+				<pre rel="consola" ><code><font size="3" color="red">~$</font> stty -a</code></pre><br>
+
+				<p>El cual nos dará las proporciones de nuestra terminal a nivel de filas y columnas (debemos tener en cuenta que si abrimos otra terminal esta debe estar en pantalla completa, si no lo está, el número de filas y columnas se estará ajustando a ese tamaño y no al número real filas y columnas que tiene la pantalla completa) </p><br>
+
+				<p>Con este valor en mente, volvemos a la shell del equipo vícitma y tipeamos:</p><br>
+
+				<pre rel="consola" ><code><font size="3" color="red">~$</font> stty rows (ValorFilas) columns (ValorColumnas)</code></pre><br>
+
+				<p>Con este último paso ya tendremos una terminal totalmente interactiva que nos facilitará mucho la labor de penetración del sistema objetivo.</p>
+        	</div>
+    	</div>
+    	<footer>
+     		<marquee>Tratamiento de la TTY</marquee>
+    	</footer>
+  	</body>
+</html>

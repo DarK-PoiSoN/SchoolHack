@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="es-ES">
+    <head>
+  	<title>Fuerza Bruta</title>
+    	<meta charset="utf-8">
+    	<link rel="icon" type="image/png" href="../../img/logo.png" />
+      	<link rel="stylesheet" href="../decoration/style.css"/>  	
+    </head>
+
+  	<body>
+
+      	<div class="cuerpo">
+        	<div class="contenido">
+		        <h1 align="center">Fuerza Bruta</h1><br><br>
+
+		        <p>Un ataque de fuerza bruta consiste en aplicar el método de prueba y error con la esperanza de dar con la combinación correcta. Este ataque se suelen utilizar para descifrar un usuario, una contraseña, un directorio oculto de una web, un archivo protegido por contraseña...</p><br>
+
+		        <p>Estos ataques demoran demasiado tiempo, por lo que se han desarrollado diccionarios específicos para utilizar en caso de querer obtener contraseñas, usuarios, directorios web... Con el fin de agilizar estas tareas. SecLists es un repositorio de github muy popular donde podemos encontrar diccionarios de todo tipo.</p>
+
+		        <a href="https://github.com/danielmiessler/SecLists"><strong>https://github.com/danielmiessler/SecLists</strong></a><br><br>
+
+		        <p>Uno de los mejores consejos que nos pueden dar a la hora de hacer un ataque de fuerza bruta cuando no disponemos de usuarios ni contraseñas válidos, es probar con los usuarios más comunes, por ejemplo, admin, root, si nos enfrentamos a un gestor de contenido buscar usuarios por defecto etc... y atender a la respuesta del lado del servidor, ya que en muchos casos la página nos arrojara un mensaje del tipo "Contraseña incorrecta" cuándo encontramos un usuario válido y "Usuario y contraseña incorrecta" cuando el usuario introducido no sea válido". Esto tiene como fin intentar no introducir un diccionario también para el campo del usuario, ya que si lo hacemos el ataque puede demorarse muchísimo más tiempo. En caso de que sea inevitable ya que la respuesta del lado del servidor sea "Usuario o contraseña incorrectos" y no logremos identificar de esta manera usuarios válidos, recomiendo crear un diccionario manual lo más pequeño posible con usuarios por defecto o muy comunes, reduciendo así la demora del ataque.</p><br>
+		        
+		        <p>Esta gia se enfocará principalmente a la herramienta THC-Hydra, comúnmente conocida como Hydra, aunque cabe destacar que también existen otras herramientas como Medusa y Ncrack, cuyo aprendizaje se deja a elección del lector.</p><br>
+
+		        <p><strong>Hydra</strong> es un software que se utiliza para crackear los sistemas de login de diferentes servicios como HTTP, FTP, TELNET, IMAP, SMB, SSH, etc.<br>Hay que tener en cuenta que este tipo de ataques son activos y no pasivos, por lo que hay una interacción con el servicio que vamos comprometer mediante un intento de autenticación de credenciales.<br>
+		        Esto creará un evento en el log de la máquina remota servidora del servicio identificando así nuestra dirección de atacante</p><br>
+
+		        
+		        <p>Principalmente se pueden definir 3 tipos de ataques:</p><br>
+				<ul type="circle">
+					<li>Fuerza bruta por diccionario con múltiples usuarios y contraseñas</li>
+					<li>Fuerza bruta a la contraseña</li>
+					<li>Password spraying</li>
+				</ul><br>
+
+				<p>A continuación, se mostrarán un par de ejemplos de la utilización de la herramienta frente a los distintos servios.</p><br><br>
+
+		        <h2>Ataque a servicio FTP</h2><br>
+
+		        <p>En este caso vamos a usar un ataque de diccionario con múltiples usuarios y contraseñas, este tipo de ataques se caracterizan por usar dos diccionarios, uno en la parte del usuario y otro o el mismo en la parte de la contraseña.<br> En el siguiente ejemplo hay nombres de usuarios por linea en el fichero "users.txt" y contraseñas en el fichero "passwords.txt".</p><br>
+
+		        <pre rel="terminal" ><code><font size="3" color="red">~$</font> hydra -L ./users.txt -P ./passwords.txt -vV 10.0.0.16 ftp</code></pre><br>
+
+		        <p>Parámetros que se utilizan:</p>
+				<ul type="circle">
+					<li><strong>-L</strong>: Para especificar la ruta al diccionario de usuarios</li>
+					<li><strong>-P</strong>: Para especificar la ruta al diccionario de contraseñas</li>
+					<li><strong>-v</strong>: Modo verbose</li>
+					<li><strong>-V</strong>: Muestra cada uno de los intentos de login que se producen</li>
+					<li><strong>10.0.0.16</strong>: Nombre del host</li>
+					<li><strong>ftp</strong>: Servicio utilizado</li>
+				</ul><br><br><br>
+
+				<h2>Ataque a servicio RDP</h2><br>
+
+		        <p>En este ejemplo usaremos un ataque de fuerza bruta, que consistirá en utilizar muchas contraseñas para una sola cuenta de usuario.</p><br>
+		        
+		        <pre rel="terminal" ><code><font size="3" color="red">~$</font> hydra -l david -P /usr/share/wordlist/rockyou.txt -vV 10.0.0.16 rdp</code></pre><br>
+		        
+		        <p>En este caso mencionamos un nuevo parámetro:<br>
+		        <ul type="circle">
+					<li><strong>-l</strong>: Sirve para especificar un usuario</p></li>
+					<li><strong>rdp</strong>: Servicio utilizado</li>
+				</ul><br><br>
+
+				<h2>Ataque a servicio HTTP</h2><br>
+
+				<pre rel="terminal" ><code><font size="3" color="red">~$</font> hydra -vV -t 64 -l administrador -P /usr/share/wordlists/rockyou.txt 10.0.0.28 -s 8000 http-post-form "/:user=admin&password=^PASS^:La contraseña es incorrecta."</code></pre><br>
+
+		        <p>Parámetros que se utilizan:</p>
+				<ul>
+					<li><strong>-t</strong>: Número de hilos, cantidad de peticiones simultáneas que se pueden emitir</li>
+					<li><strong>-s</strong>: Puerto del servicio, ya que puede darse el caso de que un servicio asociado a un puerto corra en otro puerto</li>
+					<li><strong>http-post-form</strong>: Servicio utilizado, este parámetro requiere de cierta información.</li>
+				</ul><br>
+				
+		        <p>http-post-form require, como hemos mencionado, un conjunto de información dividida en campos, estos campos estarán diferenciados por dos puntos (:).</p><br>
+		        <p>1- La ruta del servidor donde esta alojado el formulario que vamos a atacar</p><br>
+		        <p>2- Los parámetros que se tramitan, estos los podemos ver dándole a inspeccionar elemento, recargando la página y en la pestaña de "Red", encontraremos la sección "Cabeceras (Headers)"</p><br>
+		        <p>Si utilizamos la expresión ^USER^, cada línea del diccionario de usuarios se sustituirá por esta expresión a cada petición que se haga, lo mismo con la expresión ^PASS^ y el diccionario de contraseñas. En el caso del ejemplo, solo usamos ^PASS^ porque ya conocemos un usuario válido, por lo que no hemos cargado ningún diccionario de usuarios.</p>
+		        <br><br>
+		        <div align="center">
+		        	<img src="../imagenes/data.PNG" alt="data" width="100%" height="100%"></img>
+		        </div>
+		        <br>
+		    	<p>3- El mensaje que marca la web, para que, en base a este, sepamos cuando la contraseña deja de ser incorrecta. Para entender esto mejor, imaginemos que si ponemos mal la contraseña sale "Incorrect Login" y una vez la pongamos bien, este texto no aparece. De esta forma podemos filtrar por esa cadena para identificar cuando la contraseña que introducimos es válida.</p><br>
+
+		        <p>En caso de utilizar el protocolo https utilizamos la flag <strong>https-post-form</strong> seguida de la misma información.</p><br><br>
+
+		        <h2>Ataque a servicio SMB</h2><br>
+				
+				<p>En este ejemplo usaremos el ataque password spraying contra un equipo sobre el servicio samba, el cuál consiste en usar la misma contraseña para muchas cuentas de usuario.</p><br>
+
+				<pre rel="terminal" ><code><font size="3" color="red">~$</font> hydra -L /opt/SecLists/Usernames/Names/names.txt -p P@$$w0rd!$ -vV 10.0.0.35 smb</code></pre>	  <br>      
+		        
+		        <p>Nuevos parámetros:</p><br>
+		        <ul type="circle">
+					<li><strong>-p</strong>: Contraseña</p></li>
+					<li><strong>smb</strong>: Servicio utilizado</li>
+				</ul>
+
+				<h2>Ataque a servicio SSH</h2><br>
+
+				<p>En este ataque haremos seremos poseedores del usuario por lo que solo haremos fuerza bruta al campo de la contraseña</p><br>
+
+				<pre rel="terminal" ><code><font size="3" color="red">~$</font> hydra hydra -t 10 -vV -e nsr -l root -P /usr/share/wordlists/rockyou.txt 10.0.0.45 ssh</code></pre><br>
+
+				<p>Nuevos parámetros:</p><br>
+		        <ul type="circle">
+					<li><strong>-e</strong>: Añade nuevas opciones a probar además de la lista de contraseñas, ya que puede darse el caso que la contraseña sea demasiado débil. Este parámetro recibe como argumento:
+						<ul>
+							<li><strong>n:</strong> Significa nulo, comprueba si el usuario no tiene contraseña.</li>
+							<li><strong>s:</strong> Significa igual, comprueba si la contraseña es el nombre del usuario.</li>
+							<li><strong>r:</strong> Significa reverso, realiza la comprobación revirtiendo los caracteres de la contraseña.</li>
+						</ul>
+					</p></li>
+					<li><strong>ssh</strong>: Servicio utilizado</li>
+				</ul>
+
+        	</div>
+    	</div>
+    	<footer>
+      		<marquee>Fuerza Bruta</marquee>
+    	</footer>
+  	</body>
+</html>

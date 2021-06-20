@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="es-ES">
+    <head>
+  	<title>Fuzzing web</title>
+    	<meta charset="utf-8">
+      	<link rel="stylesheet" href="../decoration/style.css"/>
+      	<link rel="icon" type="image/png" href="../../img/logo.png" />	
+    </head>
+
+  	<body>
+
+      	<div class="cuerpo">
+        	<div class="contenido">
+		        <h1 align="center">Fuzzing</h1><br><br>
+
+		        <p>El <strong>Fuzzing</strong> es una técnica que permite al usuario enviar varios tipos de datos de entrada, ya sean al azar, inválidos, maliciosos.... a una determinada interfaz con el fin de ver como se comportaría el software y encontrar posibles fallos que nos conduzcan a una vulnerabilidad.</p><br>
+
+		        <p>Por ejemplo, si estuviéramos buscando un <a href="https://es.wikipedia.org/wiki/Desbordamiento_de_b%C3%BAfer"><strong>desbordamiento de buffer</strong></a>, estaríamos enviando cadenas largas e incrementando su longitud para ver si el binario se rompería y cuándo. Si estuviéramos intentando provocar una inyección sql enviaremos sentencias maliciosas recogidas en un diccionario que nos permitan explotar dicha vulnerabilidad.</p><br>
+
+		        <p>Por lo general, utilizamos diccionarios de datos con aquellos términos que deseamos fuzzear en el servidor de la víctima.</p><br>
+
+		        <p>En esta guía, vamos a orientar el fuzzing a las aplicaciones web.</p><br>
+		        
+		        <p>Imaginemos un servidor web, este puede contener subdirectorios, archivos y subdominios que no están visibles para los usuarios, con esta técnica podemos hacer fuerza bruta y recoger el código de estado que arroja el servidor web para ir encontrando rutas o archivos sensibles.<br>
+		        Por ejemplo:</p><br>
+
+		        <pre rel="url" ><code>http://google.es/noexiste</code></pre><br>
+
+		        <p>Nos devuelve el código de estado <font color="red">404 - Page Not Found</font></p><br>
+
+		        <pre rel="url" ><code>http://google.es/suport</code></pre><br>
+		        
+		        <p>Nos devuelve el código de estado <font color="orange">307 - Internal Redirect</font></p><br>
+
+		        <pre rel="url" ><code>http://google.es/alerts</code></pre><br>
+
+		        <p>Nos devuelve el código de estado <font color="green">200 - Found</font></p><br>
+
+		        <p>Esta es la idea básica que hay detrás del fuzzing web para directorios. Esto no se puede hacer manualmente, ya que llevaría una eternidad. Es por eso que tenemos herramientas que hacen esto de manera automática, eficiente y muy rápida. Estas herramientas envían cientos de solicitudes cada segundo, estudian el código HTTP de respuesta y determinan si la página existe o no. Por lo tanto, podemos determinar rápidamente qué páginas existen y luego examinarlas manualmente para ver su contenido.</p><br><br>
+
+		        <h2>Diccionarios</h2><br>
+
+		        <p>Son listas de palabras que nos permiten determinar que directorios (también se pueden utilizar para buscar archivos o incluso subdominios) se alojan en un sitio web. Aunque esta técnica no revelará todos los directorios de un sitio web específico, ya que algunos directorios tienen nombres aleatorios o usan nombres únicos, pero, en general, esta técnica tiene una muy buena tasa de éxito en la mayoría de los sitios web.</p><br>
+
+		        
+		        <p>Existen numerosos diccionarios de palabras, SecLists es un repositorio de Github muy completo que contiene muchos diccionarios con palabras muy comunes.<br>
+		        <a href="https://github.com/danielmiessler/SecLists"><strong>https://github.com/danielmiessler/SecLists</strong></a></p><br>
+		        
+		        <p>Al mirar esta lista de palabras, notaremos que contiene comentarios de derechos de autor al principio, que pueden considerarse parte de la lista de palabras y desordenar los resultados. Podemos usar el siguiente comando para deshacernos de estas líneas:</p><br>
+
+		        <pre rel="terminal"><code><font size="3" color="red">~$</font> sed -i '/^[#\s].*/d' RutaArchivo
+<font size="3" color="red">~$</font> sed -i '/^ +$/d' RutaArchivo</code></pre><br>
+
+
+		        <p>Hay bastantes herramientas para fuzzear sitios web, la elección de la herramienta va a gusto del lector, voy a explicar por encima ffuf, la más rapida, seguida de gobuster y por último wfuzz. Estás a mi conocer son las más usadas, quiero mencionar que yo siempre he utilizado wfuzz por su estupenda estética. (Recordar que siempre podemos aumentar el número de hilos para lanzar un mayor número de peticiones simultáneas con el fin de lograr nuestro objetivo en menos tiempo. Hay que tener cuidado, ya que podemos saturar el servidor y provocar su caída).</p><br><br>
+
+		        <h3>Instalación de FFUF</h3><br>
+
+		        <p>Lo podemos hacer con el instalador de paquetes utilizando el comando</p><br>
+
+		        <pre rel="terminal"><code><font size="3" color="red">~$</font> apt install ffuf</code></pre><br>
+
+		        <p>O desde el repositorio oficial <a href="https://github.com/ffuf/ffuf"><strong>https://github.com/ffuf/ffuf</strong></a></p><br><br>
+				
+				<h4>Parámetros de FFUF</h4><br>        
+		        
+		        <pre rel="help" ><code>HTTP OPTIONS:
+  -H               Header `"Name: Value"`, separated by colon. Multiple -H flags are accepted.
+  -X               HTTP method to use (default: GET)
+  -b               Cookie data `"NAME1=VALUE1; NAME2=VALUE2"` for copy as curl functionality.
+  -d               POST data
+  -ignore-body     Do not fetch the response content. (default: false)
+  -r               Follow redirects (default: false)
+  -recursion       Scan recursively. Only FUZZ keyword is supported, and URL (-u) has to end in it. (default: false)
+  -recursion-depth Maximum recursion depth. (default: 0)
+  -replay-proxy    Replay matched requests using this proxy.
+  -timeout         HTTP request timeout in seconds. (default: 10)
+  -u               Target URL
+  -x               HTTP Proxy URL
+
+GENERAL OPTIONS:
+  -V               Show version information. (default: false)
+  -ac              Automatically calibrate filtering options (default: false)
+  -acc             Custom auto-calibration string. Can be used multiple times. Implies -ac
+  -c               Colorize output. (default: false)
+  -maxtime         Maximum running time in seconds for entire process. (default: 0)
+  -maxtime-job     Maximum running time in seconds per job. (default: 0)
+  -p               Seconds of `delay` between requests, or a range of random delay. For example "0.1" or "0.1-2.0"
+  -s               Do not print additional information (silent mode) (default: false)
+  -sa              Stop on all error cases. Implies -sf and -se. (default: false)
+  -se              Stop on spurious errors (default: false)
+  -sf              Stop when > 95% of responses return 403 Forbidden (default: false)
+  -t               Number of concurrent threads. (default: 40)
+  -v               Verbose output, printing full URL and redirect location (if any) with the results. (default: false)
+
+MATCHER OPTIONS:
+  -mc              Match HTTP status codes, or "all" for everything. (default: 200,204,301,302,307,401,403)
+  -ml              Match amount of lines in response
+  -mr              Match regexp
+  -ms              Match HTTP response size
+  -mw              Match amount of words in response
+
+FILTER OPTIONS:
+  -fc              Filter HTTP status codes from response. Comma separated list of codes and ranges
+  -fl              Filter by amount of lines in response. Comma separated list of line counts and ranges
+  -fr              Filter regexp
+  -fs              Filter HTTP response size. Comma separated list of sizes and ranges
+  -fw              Filter by amount of words in response. Comma separated list of word counts and ranges
+
+INPUT OPTIONS:
+  -D               DirSearch wordlist compatibility mode. Used in conjunction with -e flag. (default: false)
+  -e               Comma separated list of extensions. Extends FUZZ keyword.
+  -ic              Ignore wordlist comments (default: false)
+  -input-cmd       Command producing the input. --input-num is required when using this input method. Overrides -w.
+  -input-num       Number of inputs to test. Used in conjunction with --input-cmd. (default: 100)
+  -mode            Multi-wordlist operation mode. Available modes: clusterbomb, pitchfork (default: clusterbomb)
+  -request         File containing the raw http request
+  -request-proto   Protocol to use along with raw request (default: https)
+  -w               Wordlist file path and (optional) keyword separated by colon. eg. '/path/to/wordlist:KEYWORD'
+
+OUTPUT OPTIONS:
+  -debug-log       Write all of the internal logging to the specified file.
+  -o               Write output to file
+  -od              Directory path to store matched results to.
+  -of              Output file format. Available formats: json, ejson, html, md, csv, ecsv (or, 'all' for all formats) (default: json)</code></pre><br>
+
+		        <p>Vamos a ver algunos ejemplos de lo que podemos hacer con ffuf</p><br><br>
+
+		        <h3>Fuzzear directorios</h3><br>
+
+		        <p>Con la opción:</p><br>
+		        	<p><strong>-c:</strong> Pone de colores el código de estado para una mayor comodidad a la hora de ver los resultados.</p>
+		        	<p><strong>-r:</strong> Si encuentra un código de estado de redirección, este se redirigue y se mostrará el código de estado correspondiente a la página que se ha redirigido.</p>
+		        	<p><strong>-w:</strong> Especificamos la ruta del diccionario, seguido de dos puntos y la palabra que queramos, esta palabra identificará ese diccionario. y una vez  se encargará de sustituir cada uno de los valores que contenga el diccionario por dicha palabra en la url.</p>
+		        	<p><strong>-u:</strong> Definimos la url, esta debe empezar siempre por (http:// || https://). Y debemos añadir la palabra que identifique el diccionario en la posición donde queramos que ha cada petición que se realice, el valor, cambie por cada una de las palabras que contenga el diccionario asignado a la palabra que hayamos querido poner para que identifique el diccionario.</p><br>
+
+		        <pre rel="terminal"><code><font size="3" color="red">~$</font> ffuf -c -r -w directory-list-2.3-small.txt:FUZZ -u http://10.0.0.10/FUZZ</code></pre><br>
+
+				<p>Si nos fijamos al diccionario se le asigna la palabra "FUZZ", y en la url, esa palabra, será sustituida por cada uno de los valores del diccionario. Si no ponemos ":FUZZ" como identificador del diccionario (es decir, no le ponemos identificador) FFUF, utiliza por defecto la palabra "FUZZ", la cual si la pones en la url, sera sustituida por los valores que haya en el diccionario.</p><br>
+
+				<p>Dependiendo de los resultados quizás nos interese filtrar por el código de respuesta esto lo haremos con el parámetro <strong>-fc</strong> seguido de los códigos separados por coma. Tambíen podemos filtrar por el número de líneas (<strong>-fl</strong>)... Todos estos filtros los tenemos en la man page.</p><br>
+
+				<strong>Pero... ¿Porque nos interesaría filtrar por ejemplo, por el número de palabras?</strong><br>
+
+				<p>La respuesta es sencilla, para eliminar ruido en el output que se valla generando, que quiero decir con esto, que en multitud de ocasiones nos encontraremos directorios que tienen el mismo contenido, y filtrando por las palabras que contiene, podemos quitar estos resultados del output, un ejemplo que seguro os va a pasar, será si ejecutáis la siguiente línea sin a ver quitado previamente los comentarios, el resultado será que las primeras líneas del diccionario al ser comentarios que empiezan por #, el código de estado que devuelve la página ante estas situaciones será 200, y para no tener ruido, nos interesa filtrarlo<br>Ejemplo:</p>				
+				<p>Output sin filtrar (<strike>-fw</strike>)</p><br>
+
+				<pre rel="terminal"><code><font size="3" color="red">~$</font> ffuf -c -w directory-list-2.3-small.txt -u http://10.0.0.10/FUZZ</code></pre><br>
+
+				<pre rel="output" ><code># This work is licensed under the Creative Commons  [Status: 200, Size: 986, Words: 423, Lines: 56]
+# or send a letter to Creative Commons, 171 Second Street,  [Status: 200, Size: 986, Words: 423, Lines: 56]
+#                       [Status: 200, Size: 986, Words: 423, Lines: 56]
+# Priority ordered case sensative list, where entries were found  [Status: 200, Size: 986, Words: 423, Lines: 56]
+# directory-list-2.3-medium.txt [Status: 200, Size: 986, Words: 423, Lines: 56]
+
+#                       [Status: 200, Size: 986, Words: 423, Lines: 56]
+# Copyright 2007 James Fisher [Status: 200, Size: 986, Words: 423, Lines: 56]
+#                       [Status: 200, Size: 986, Words: 423, Lines: 56]
+# license, visit http://creativecommons.org/licenses/by-sa/3.0/  [Status: 200, Size: 986, Words: 423, Lines: 56]
+# Attribution-Share Alike 3.0 License. To view a copy of this  [Status: 200, Size: 986, Words: 423, Lines: 56]
+# Suite 300, San Francisco, California, 94105, USA. [Status: 200, Size: 986, Words: 423, Lines: 56]
+# on atleast 2 different hosts [Status: 200, Size: 986, Words: 423, Lines: 56]
+#                       [Status: 200, Size: 986, Words: 423, Lines: 56]
+tienda                    [Status: 200, Size: 2046, Words: 858, Lines: 112]
+</code></pre>
+
+				<p>Output filtrado (-fw)</p><br>
+
+				<pre rel="terminal"><code><font size="3" color="red">~$</font> ffuf -c -r -fw 423 -w directory-list-2.3-small.txt -u http://10.0.0.10/FUZZ</code></pre><br>
+
+				<pre rel="output" ><code>tienda                    [Status: 200, Size: 2046, Words: 858, Lines: 112]
+</code></pre><br><br>
+
+				<h3>Fuzzear archivos</h3><br>
+
+				<p>Para fuzzear archivos entran en juego dos diccionarios, el de los nombres y el de las extensiones, este segundo me lo suelo definir yo, siempre con el menor número posible de estas para demorarnos el menor tiempo posible, tenemos que tener claro que archivos deseamos encontrar, es decir, no busques archivos asp o aspx si por ejemplo, con wappalyzer puedes ver que el lenguaje de programación es php, con whatweb puedes ver por ejemplo sii el servidor es apache, entonces podemos obtar por la extensión .php, o si por el contrario fuera IIS, entonces podríamos utilizar .asp .aspx .</p><br>
+				
+				<p>Si solo vamos a fuzzear por una extenxion no es necesario utilizar un diccionario, se puede hacer de la siguiente manera:</p><br>
+
+				<pre rel="terminal"><code><font size="3" color="red">~$</font> ffuf -c -r -w /opt/SecLists/Discovery/Web-Content/directory-list-2.3-big.txt -u http://10.0.0.10/tienda/FUZZ.php -fc 404,403 -fs 986</code></pre><br>
+
+				<p>En este caso queremos que el código de estado se nos muestre en colorines, también deseamos hacer un follow redirect, para que el código que nos muestre sea el perteneciente al sitio donde nos va a redirigir, con -w, seleccionamos un diccionario, si nos fijamos, este no esta identificadoo por ninguna palabra, por lo que cojerá por defecto la palabra "FUZZ", vamos a ocultar los códigos de estado 404 y 403 que arroja la página y filtraremos el tamaño de la pagina 986, que los provoca los comentarios y las líneas en blanco perteneciente a el nuevo diccionario que estamos utilizando, de esta forma muestro como limpiar el output. Ahora llegamos a lo más importante, en la url, cada una de las líneas del diccionario se sustituirá por la palabra FUZZ en el lugar donde se encuentre en la url, y como vemos, se le agregará la extensión .php al final de cada una de las palabras, de esta forma, empezaremos a buscar archivos dentro del directorio tienda.</p><br>
+
+				<p>En el caso de querer fuzzear por múltiples extensiones, podemos generar un diccionario con las siguientes, extensiones, cada una en una línea.</p><br>
+				<ul type="circle">
+					<li>php</li>
+					<li>jsp</li>
+					<li>asp</li>
+					<li>aspx</li>
+				</ul><br>
+
+				<pre rel="terminal"><code><font size="3" color="red">~$</font> ffuf -c -r -w /opt/SecLists/Discovery/Web-Content/directory-list-2.3-medium.txt -w extensions.txt:EXT -u http://138.68.182.108:31409/blog/FUZZ.EXT -fc 404,403 -fs 986 -t 70</code></pre><br>
+
+				<p>El segundo diccionario lo añadimos volviendo a poner el parametro -w, e identificando este con un nombre, en este caso "EXT" (extensión), tras esto al tramitar la petición, la url cambiara el texto "EXT" por cada una de las líneas que contiene el diccionario extensions.txt</p><br>
+
+				<p>En esta ocasión definiremos el número de peticiónes simultáneas que se realizarán contra el servidor web, esto lo haremos con el parámetro <strong>-t</strong> seguido del número de hilos. Recordemos que, si ponemos demasiados, podemos llegar a saturar el servidor.</p><br>
+
+				<p>Obteniendo el siguiente output:</p><br>
+
+				<pre rel="output" ><code>[Status: 200, Size: 3430, Words: 1321, Lines: 190]
+    * FUZZ: index
+    * ext: php
+
+[Status: 200, Size: 546, Words: 79, Lines: 28]
+    * FUZZ: upload
+    * ext: php</code></pre><br>
+
+				<p>Si deseas ver la url completa introduce el parámetro <strong>-v</strong></p>
+        	</div>
+    	</div>
+    	<footer>
+      		<marquee>Fuzzing Web</marquee>
+    	</footer>
+  	</body>
+</html>

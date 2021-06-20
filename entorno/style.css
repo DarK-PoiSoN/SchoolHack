@@ -1,0 +1,132 @@
+/*h1 {
+	color: white;
+	display: block;
+	position: absolute;
+	top:10%;
+	left:0;
+	right:0;
+	margin-left:auto;
+	margin-right:auto;
+	font-size: 65px;
+	text-shadow: 2px 1px 6px rgb(255, 0, 0);
+}
+*/
+/* Botones */
+
+
+.Button1 {
+
+	display: block;
+	position: absolute;
+	top:45%;
+	left:20%;
+	box-shadow:inset 0px 1px 0px 0px #efdcfb;
+	background:linear-gradient(to bottom, #81718f 5%, #000000 100%);
+	background-color:green;
+	border-radius:50px;
+	border:3px solid #fa0303;
+	display:inline-block;
+	cursor:pointer;
+	color:#ffffff;
+	font-family:Arial;
+	font-size:40px;
+	font-weight:bold;
+	padding:6px 24px;
+	text-decoration:none;
+	text-shadow:0px 1px 0px #9752cc;
+}
+.Button1:hover {
+	background:linear-gradient(to bottom, #000000 5%, #81718f 100%);
+	background-color:#000000;
+}
+.Button1:active {
+	position:absolute;
+	top:46%;
+}
+
+.Button2 {
+
+	display: block;
+	position: absolute;
+	top:45%;
+	right:20%;
+	box-shadow:inset 0px 1px 0px 0px #efdcfb;
+	background:linear-gradient(to bottom, #81718f 5%, #000000 100%);
+	background-color:green;
+	border-radius:50px;
+	border:3px solid #fa0303;
+	display:inline-block;
+	cursor:pointer;
+	color:#ffffff;
+	font-family:Arial;
+	font-size:40px;
+	font-weight:bold;
+	padding:6px 24px;
+	text-decoration:none;
+	text-shadow:0px 1px 0px #9752cc;
+}
+.Button2:hover {
+	background:linear-gradient(to bottom, #000000 5%, #81718f 100%);
+	background-color:#000000;
+}
+.Button2:active {
+	position:absolute;
+	top:46%;
+}
+
+
+.autor {
+	color: yellow;
+	display: block;
+	position: absolute;
+	bottom:2%;
+	left:0;
+	right:0;
+	margin-left:auto;
+	margin-right:auto;
+}
+
+.normal {
+	text-shadow: 0px 0px 6px rgb(100, 0, 255);
+	/*text-shadow: 0px 0px 6px rgb(100, 0, 255), 0px 0px 5px rgb(255, 0, 0), 0px 0px 5px rgb(255, 0, 0);*/
+	font-weight: bold;
+	color: white;
+	font-size: 15;
+}
+
+
+
+/*basic reset*/
+* {margin: 0; padding: 0;}
+/*adding a black bg to the body to make things clearer*/
+body {background: black;}
+canvas {display: block;}
+
+/*TITULO*/
+* {
+    margin: 0;
+    padding: 0;
+}
+
+.centrar {
+	  position: absolute; 
+	  top: 10%;
+  left: 0; 
+  right: 0; 
+  margin-left: auto; 
+  margin-right: auto; 
+  width: 100%; /* Need a specific value to work */
+
+}
+
+.text {
+	position: relative;
+	text-align: center;
+	font-size: 50px;
+	color: #FAFAFA;
+	font-family: Iceland;
+	text-shadow: 0 0 0.5em red, 0 0 0.5em red;  
+}
+.dud {
+  color: #757575;
+}

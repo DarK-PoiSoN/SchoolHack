@@ -1,0 +1,208 @@
+* {
+  margin: 0;
+  padding: 0;
+}
+
+html {
+    scrollbar-color: #ffae00 transparent;
+    scrollbar-width: 15;
+}
+body {
+    background-color: #100e17;
+    color:white;
+    font-size: 20px;
+    overflow-y: auto;
+}
+
+footer {
+  width: 100%;
+  margin-bottom: 4vh
+}
+
+@font-face {
+  font-family: Comic Sans MS;
+  src:url(../fonts/comic-sans-ms.ttf);
+}
+
+@font-face {
+  font-family: CallingCode;
+  src:url(../fonts/CallingCode-Regular.ttf);
+}
+
+
+h1, marquee {
+  font-family: Comic Sans MS;
+}
+
+* {
+  font-family: CallingCode;
+}
+
+
+body::-webkit-scrollbar {
+  width: 25px;
+  border-radius: 100%;
+}
+
+body::-webkit-scrollbar-track{
+  background:linear-gradient(90deg,#201c29,#201c29 1px,transparent 0,transparent)
+}
+
+body::-webkit-scrollbar-thumb {
+  background-image: linear-gradient(45deg,#e52e71,#ff8a00);
+  border-radius: 10px;
+  -webkit-box-shadow: rgba(0,0,0,.12) 0 3px 13px 1px;
+}
+
+
+
+h1 {
+  text-align: center;
+  /*color: #5858FA;*/
+  /*font-family: Comic Sans MS;*/
+  font-style: italic;
+  font-size: 85px;
+  background: -webkit-linear-gradient(#e52e71,#ff8a00);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+ul {
+  padding-left: 40px;
+}
+
+li {
+  margin-left: 1em;
+}
+
+a {
+   background: -webkit-linear-gradient(#e52e71,#ff8a00);
+   -webkit-background-clip: text;
+   -webkit-text-fill-color: transparent;
+   text-decoration: none
+}
+a:hover {
+    background: linear-gradient(90deg, #ff8a00, #e52e71);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    -webkit-box-decoration-break: clone;
+    box-decoration-break: clone;
+    text-shadow: none;
+}
+
+
+.cuerpo {
+  margin-left: 10vw;
+  margin-bottom: 4vh;
+  margin-top: 10vh;
+  width: 80vw;
+  height: max-content;
+  padding-bottom: 50px;
+  background: black;
+  border-radius: 90px;
+}
+
+.contenido {
+  color: white;
+  font-family: cursive;
+  margin-left: 7.5%;
+  margin-bottom: 5%;
+  width: 85%;
+  height: 80%;
+  padding-top: 50px;
+}
+
+table {
+  border-radius: 50px;
+  overflow: hidden;
+  
+}
+
+/*  Style pre */
+pre {
+    border-top: 1px solid #000;
+    border-bottom: 1px solid #000;
+    background-color: #18151f; 
+    overflow-x: auto;
+    /*  Firefox */
+ }
+
+
+pre::-webkit-scrollbar {
+    width: .4em;
+    height: .4em;
+}
+pre::-webkit-scrollbar-thumb {
+    background: #666;
+    border-radius: .5em;
+    box-shadow: inset 2px 2px 2px hsla(0, 0%, 100%, .25), inset -2px -2px 2px rgba(0, 0, 0, .25);
+}
+pre::-webkit-scrollbar-track {
+    background: linear-gradient(90deg, #201c29, #201c29 1px, none 0, none);
+}
+
+pre {
+    font-family: Operator Mono A, Operator Mono B, Source Code Pro, Menlo, Consolas, Monaco, monospace;
+    clear: both;
+    color: #fff;
+    background: rgba(32, 28, 41, .75);
+    padding: 0;
+    -moz-tab-size: 2;
+    -o-tab-size: 2;
+    tab-size: 2;
+    -ms-word-break: normal;
+    word-break: normal;
+    -webkit-hyphens: none;
+    -ms-hyphens: none;
+    hyphens: none;
+    position: relative;
+    line-height: 28px;
+    border-radius: 8px;
+    min-width: 100px;
+    max-width: 100%;
+    overflow-x: auto;
+}
+pre[rel]:not([rel=""]):before {
+    font-family: Ringside Regular A, Ringside Regular B, Rubik, Lato, Lucida Grande, Lucida Sans Unicode, Tahoma, Sans-Serif;
+    font-style: normal;
+    font-weight: 700;
+    font-size: .5rem;
+    content: attr(rel);
+    color: #fff;
+    position: absolute;
+    top: -.2rem;
+    right: .4rem;
+    padding: 0;
+    color: #ff8a00!important;
+}
+pre code {
+    scrollbar-color: #666 #201c29;
+    scrollbar-width: thin;
+    background: 0 0;
+    padding: 15px 20px 12px 22px;
+    white-space: pre;
+    -webkit-overflow-scrolling: touch;
+    display: block;
+    overflow-x: auto;
+    max-width: 100%;
+    min-width: 100px;
+    font-size: 17px;
+    line-height: 1.75;
+}
+
+pre code::-webkit-scrollbar {
+    width: .5em;
+    height: .5em;
+}
+pre code::-webkit-scrollbar-thumb {
+    background: #666;
+    border-radius: .5em;
+    box-shadow: inset 2px 2px 2px hsla(0, 0%, 100%, .25), inset -2px -2px 2px rgba(0, 0, 0, .25);
+}
+pre code::-webkit-scrollbar-track {
+    background: linear-gradient(90deg, #201c29, #201c29 1px, none 0, none);
+}
+code {
+    font-family: Operator Mono A, Operator Mono B, Source Code Pro, Menlo, Consolas, Monaco, monospace;
+}
+
