@@ -17,7 +17,7 @@ bash SchoolHack.sh
 ```
 <p align="left">
 <img src="images-readme/Script.PNG"
-	alt="Tool Design"
+	alt="SchoolHack"
 	width="700"/>
 </p>
 
