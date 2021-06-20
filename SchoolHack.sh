@@ -90,7 +90,7 @@ if [ $(id -u) -eq 0 ]; then
 		if [ $? -ne 0 ]; then
 			echo -e " ${grayColor}[${redColor}!${endColor}${grayColor}] PHP no esta instalado${endColor}"
 			echo -e " \t${turquoiseColor}>>${endColor} ${greenColor}Instalando...${endColor}"
-			apt install php php-cgi php-mysqli php-pear php-mbstring libapache2-mod-php php-common php-phpseclib php-mysql -y >/dev/null 2>&1
+			apt install php php-cgi php-pear php-mbstring libapache2-mod-php php-common php-phpseclib php-mysql -y >/dev/null 2>&1
 		else
 			echo -e " \t${grayColor}[${greenColor}+${endColor}${grayColor}] PHP${endColor}"
 		fi
