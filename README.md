@@ -4,6 +4,12 @@ Mejora el diseño y te permite trabajar con mayor fluidez.
 Este script fue testado en Parrot Security y Kali linux.
 Este entorno de escritorio es el que uso en el dia dia.
 
+<p align="left">
+<img src="entorno/img/logo.png"
+	alt="SchoolHack"
+	width="700"/>
+</p>
+
 ## Comenzando 🚀
 
 Descargue y ejecute el sript en bash con el siguiente comando:
