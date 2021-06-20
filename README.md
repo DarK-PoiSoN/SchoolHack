@@ -24,7 +24,7 @@ bash SchoolHack.sh
 
 Este script se ha testeado en los siguentes sitemas operativos:
 
-• Kali Linux
+• Kali Linux\n
 • Parrot Security
 • Linux Mint
 • Ubuntu
