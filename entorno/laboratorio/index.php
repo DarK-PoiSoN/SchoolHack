@@ -38,7 +38,7 @@
 						echo '<a class="enlace" target="_blank" href="http://schoolhack.local:8000">http://schoolhack.local:8000</a>';
 					}
 					else {
-						echo '<a class="enlace"></a>';
+						echo '<a class="enlace" target="_blank"></a>';
 					}
 				?>
 				</div>
@@ -67,7 +67,7 @@
 						echo '<a class="enlace" target="_blank" href="http://schoolhack.local:8001">http://schoolhack.local:8001</a>';
 					}
 					else {
-						echo '<a class="enlace"></a>';
+						echo '<a class="enlace" target="_blank"></a>';
 					}
 					?>
 				</div>
@@ -96,7 +96,7 @@
 						echo '<a class="enlace" target="_blank" href="http://schoolhack.local:8002">http://schoolhack.local:8002</a>';
 					}
 					else {
-						echo '<a class="enlace"></a>';
+						echo '<a class="enlace" target="_blank"></a>';
 					}
 					?>
 				</div>
@@ -125,7 +125,7 @@
 						echo '<a class="enlace" target="_blank" href="http://schoolhack.local:8003">http://schoolhack.local:8003</a>';
 					}
 					else {
-						echo '<a class="enlace"></a>';
+						echo '<a class="enlace" target="_blank"></a>';
 					}
 					?>
 				</div>
@@ -154,7 +154,7 @@
 						echo '<a class="enlace" target="_blank" href="http://schoolhack.local:8004">http://schoolhack.local:8004</a>';
 					}
 					else {
-						echo '<a class="enlace"></a>';
+						echo '<a class="enlace" target="_blank"></a>';
 					}
 					?>
 				</div>
