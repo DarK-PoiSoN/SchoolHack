@@ -106,7 +106,7 @@
 		if ($_POST['vuln'] == "bf") {
 			if ($_POST['accion'] == "descargar") {
 				exec('docker network create --subnet=172.30.0.0/16 brute_force');
-				exec('docker run -p 8004:80 --net brute_force --ip 172.30.0.5 --name brute_force --hostname tienda -d davicillo12/brute_force:v3');
+				exec('docker run -p 8004:80 --net brute_force --ip 172.30.0.5 --name brute_force --hostname tienda -d davicillo12/brute_force:v4');
 				exec('docker exec brute_force service ssh start');
 			}
 			if ($_POST['accion'] == "encender") {
@@ -116,7 +116,7 @@
 			if ($_POST['accion'] == "reiniciar") {
 				exec('docker stop brute_force');
 				exec('docker rm brute_force');
-				exec('docker run -p 8004:80 --net brute_force --ip 172.30.0.5 --name brute_force --hostname tienda -d davicillo12/brute_force:v3');
+				exec('docker run -p 8004:80 --net brute_force --ip 172.30.0.5 --name brute_force --hostname tienda -d davicillo12/brute_force:v4');
 				exec('docker exec brute_force service ssh start');
 			}
 			if ($_POST['accion'] == "apagar") {
