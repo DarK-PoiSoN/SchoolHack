@@ -22,10 +22,14 @@ bash SchoolHack.sh
 </p>
 
 
+
 ### Recomendaciones ⚠️
 
 Este entorno ha sido diseñado para su uso y disfrute en el navegador Google-Chrome, aunque cabe destacar que se ha adaptado para su visualización en firefox.
-Para evitar problemas se debe usar Google-Chrome para descargar las máquinas desde el laboratorio.
+
+Para evitar problemas a la hora de descargar las máquinas vulnerables se recomienda usar Google-Chrome.
+
+
 
 ### Testeado ⚙️
 
