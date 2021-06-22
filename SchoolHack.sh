@@ -73,7 +73,7 @@ if [ $(id -u) -eq 0 ]; then
 			apt-get update -y >/dev/null 2>&1
 			apt-get install docker-ce docker-ce-cli containerd.io -y >/dev/null 2>&1
 		else
-			echo -e " \t${grayColor}[${greenColor}+${endColor}${grayColor}] Docker${endColor}"
+			echo -e " ${grayColor}[${greenColor}+${endColor}${grayColor}] Docker${endColor}"
 
 		fi
 
@@ -83,7 +83,7 @@ if [ $(id -u) -eq 0 ]; then
 		echo -e " \t${turquoiseColor}>>${endColor} ${greenColor}Instalando...${endColor}"
 			apt install apache2 -y >/dev/null 2>&1
 		else
-			echo -e " \t${grayColor}[${greenColor}+${endColor}${grayColor}] Apache2${endColor}"
+			echo -e " ${grayColor}[${greenColor}+${endColor}${grayColor}] Apache2${endColor}"
 		fi
 
 		which php > /dev/null
@@ -92,7 +92,7 @@ if [ $(id -u) -eq 0 ]; then
 			echo -e " \t${turquoiseColor}>>${endColor} ${greenColor}Instalando...${endColor}"
 			apt install php php-cgi php-pear php-mbstring libapache2-mod-php php-common php-phpseclib php-mysql -y >/dev/null 2>&1
 		else
-			echo -e " \t${grayColor}[${greenColor}+${endColor}${grayColor}] PHP${endColor}"
+			echo -e " ${grayColor}[${greenColor}+${endColor}${grayColor}] PHP${endColor}"
 		fi
 
 		echo -e "\n ${grayColor}[${greenColor}+${endColor}${grayColor}] Montando entorno de aprendizaje web${endColor}\n"
