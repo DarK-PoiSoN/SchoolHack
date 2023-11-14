@@ -16,11 +16,11 @@
 		<div id="table">
 			<div class="sub-table">
 				<div class="table-items">Local File Inclusion</div>
-				<div class="table-items" align="center">
+				<div class="table-items boton-lfi" align="center">
 					<?php
 						if (exec('if docker images | grep "davicillo12/lfi" >/dev/null 2>&1; then echo yes; else echo no; fi| xargs echo') == "no") {
 					?>
-							<input type="submit" value="Descargar" class="boton1" onclick = "accion('lfi', 'descargar');">
+							<input type="submit" value="Descargar" class="boton1">
 					<?php
 						} else {
 							?>
@@ -29,9 +29,9 @@
 					}
 					?>
 				</div>
-				<div class="table-items"  align="center"><input type="submit" value="Encender" class="boton2" onclick = "accion('lfi', 'encender');"></div>
-				<div class="table-items" align="center"><input type="submit" value="Reiniciar" class="boton3" onclick = "accion('lfi', 'reiniciar');"></div>
-				<div class="table-items" align="center"><input type="submit" value="Apagar" class="boton4" onclick = "accion('lfi', 'apagar');"></div>
+				<div class="table-items boton-lfi"  align="center"><input type="submit" value="Encender" class="boton2"></div>
+				<div class="table-items boton-lfi" align="center"><input type="submit" value="Reiniciar" class="boton3"></div>
+				<div class="table-items boton-lfi" align="center"><input type="submit" value="Apagar" class="boton4"></div>
 				<div class="table-items" id="local1">
 				<?php
 					if (exec('if docker ps | grep "lfi" >/dev/null 2>&1; then echo yes; else echo no; fi') == "yes") {
@@ -45,11 +45,11 @@
 			</div>
 			<div class="sub-table">
 				<div class="table-items">Log Poisoning</div>
-				<div class="table-items" align="center">
+				<div class="table-items boton-lp" align="center">
 					<?php
 						if (exec('if docker images | grep "davicillo12/log_poisoning" >/dev/null 2>&1; then echo yes; else echo no; fi| xargs echo') == "no") {
 					?>
-							<input type="submit" value="Descargar" class="boton1" onclick = "accion('lp', 'descargar');">
+							<input type="submit" value="Descargar" class="boton1">
 					<?php
 						} else {
 							?>
@@ -58,9 +58,9 @@
 					}
 					?>
 				</div>
-				<div class="table-items" align="center"><input type="submit" value="Encender" class="boton2" onclick = "accion('lp', 'encender');"></div>
-				<div class="table-items" align="center"><input type="submit" value="Reiniciar" class="boton3" onclick = "accion('lp', 'reiniciar');"></div>
-				<div class="table-items" align="center"><input type="submit" value="Apagar" class="boton4" onclick = "accion('lp', 'apagar');"></div>
+				<div class="table-items boton-lp" align="center"><input type="submit" value="Encender" class="boton2"></div>
+				<div class="table-items boton-lp" align="center"><input type="submit" value="Reiniciar" class="boton3"></div>
+				<div class="table-items boton-lp" align="center"><input type="submit" value="Apagar" class="boton4"></div>
 				<div class="table-items" id="local1">
 					<?php
 					if (exec('if docker ps | grep "log_poisoning" >/dev/null 2>&1; then echo yes; else echo no; fi') == "yes") {
@@ -74,11 +74,11 @@
 			</div>
 			<div class="sub-table">
 				<div class="table-items">Remote File Inclusion</div>
-				<div class="table-items" align="center">
+				<div class="table-items boton-rfi" align="center">
 					<?php
 						if (exec('if docker images | grep "davicillo12/rfi" >/dev/null 2>&1; then echo yes; else echo no; fi| xargs echo') == "no") {
 					?>
-							<input type="submit" value="Descargar" class="boton1" onclick = "accion('rfi', 'descargar');">
+							<input type="submit" value="Descargar" class="boton1">
 					<?php
 						} else {
 							?>
@@ -87,9 +87,9 @@
 					}
 					?>
 				</div>
-				<div class="table-items" align="center"><input type="submit" value="Encender" class="boton2" onclick = "accion('rfi', 'encender');"></div>
-				<div class="table-items" align="center"><input type="submit" value="Reiniciar" class="boton3" onclick = "accion('rfi', 'reiniciar');"></div>
-				<div class="table-items" align="center"><input type="submit" value="Apagar" class="boton4" onclick = "accion('rfi', 'apagar');"></div>
+				<div class="table-items boton-rfi" align="center"><input type="submit" value="Encender" class="boton2"></div>
+				<div class="table-items boton-rfi" align="center"><input type="submit" value="Reiniciar" class="boton3"></div>
+				<div class="table-items boton-rfi" align="center"><input type="submit" value="Apagar" class="boton4"></div>
 				<div class="table-items" id="local1">
 					<?php
 					if (exec('if docker ps | grep "rfi" >/dev/null 2>&1; then echo yes; else echo no; fi') == "yes") {
@@ -103,11 +103,11 @@
 			</div>
 			<div class="sub-table">
 				<div class="table-items">Inyección SQL</div>
-				<div class="table-items" align="center">
+				<div class="table-items boton-isql" align="center">
 					<?php
-						if (exec('if docker images | grep "davicillo12/sqlinjection" >/dev/null 2>&1; then echo yes; else echo no; fi| xargs echo') == "no" && exec('if docker images | grep "davicillo12/basedatos" >/dev/null 2>&1; then echo yes; else echo no; fi| xargs echo') == "no") {
+						if (exec('if docker images | grep "davicillo12/sqlinjection" >/dev/null 2>&1; then echo yes; else echo no; fi| xargs echo') == "no" || exec('if docker images | grep "davicillo12/basedatos" >/dev/null 2>&1; then echo yes; else echo no; fi| xargs echo') == "no") {
 					?>
-							<input type="submit" value="Descargar" class="boton1" onclick = "accion('isql', 'descargar');">
+							<input type="submit" value="Descargar" class="boton1">
 					<?php
 						} else {
 							?>
@@ -116,9 +116,9 @@
 					}
 					?>
 				</div>
-				<div class="table-items" align="center"><input type="submit" value="Encender" class="boton2" onclick = "accion('isql', 'encender');"></div>
-				<div class="table-items" align="center"><input type="submit" value="Reiniciar" class="boton3" onclick = "accion('isql', 'reiniciar');"></div>
-				<div class="table-items" align="center"><input type="submit" value="Apagar" class="boton4" onclick = "accion('isql', 'apagar');"></div>
+				<div class="table-items boton-isql" align="center"><input type="submit" value="Encender" class="boton2"></div>
+				<div class="table-items boton-isql" align="center"><input type="submit" value="Reiniciar" class="boton3"></div>
+				<div class="table-items boton-isql" align="center"><input type="submit" value="Apagar" class="boton4"></div>
 				<div class="table-items" id="local1">
 					<?php
 					if (exec('if docker ps | grep "sqlinjection" >/dev/null 2>&1; then echo yes; else echo no; fi') == "yes" && exec('if docker ps | grep "basedatos" >/dev/null 2>&1; then echo yes; else echo no; fi') == "yes") {
@@ -132,11 +132,11 @@
 			</div>
 			<div class="sub-table">
 				<div class="table-items">Fuerza Bruta</div>
-				<div class="table-items" align="center">
+				<div class="table-items boton-bf" align="center">
 					<?php
 						if (exec('if docker images | grep "davicillo12/brute_force" >/dev/null 2>&1; then echo yes; else echo no; fi| xargs echo') == "no") {
 					?>
-							<input type="submit" value="Descargar" class="boton1" onclick = "accion('bf', 'descargar');">
+							<input type="submit" value="Descargar" class="boton1">
 					<?php
 						} else {
 							?>
@@ -145,9 +145,9 @@
 					}
 					?>
 				</div>
-				<div class="table-items" align="center"><input type="submit" value="Encender" class="boton2" onclick = "accion('bf', 'encender');"></div>
-				<div class="table-items" align="center"><input type="submit" value="Reiniciar" class="boton3" onclick = "accion('bf', 'reiniciar');"></div>
-				<div class="table-items" align="center"><input type="submit" value="Apagar" class="boton4" onclick = "accion('bf', 'apagar');"></div>
+				<div class="table-items boton-bf" align="center"><input type="submit" value="Encender" class="boton2"></div>
+				<div class="table-items boton-bf" align="center"><input type="submit" value="Reiniciar" class="boton3"></div>
+				<div class="table-items boton-bf" align="center"><input type="submit" value="Apagar" class="boton4"></div>
 				<div class="table-items" id="local1">
 					<?php
 					if (exec('if docker ps | grep "brute_force" >/dev/null 2>&1; then echo yes; else echo no; fi') == "yes") {
