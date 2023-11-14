@@ -105,6 +105,9 @@ if [ $(id -u) -eq 0 ]; then
 		if [ $? -ne 0 ]; then
 			echo "127.0.0.1		SchoolHack.local" >> /etc/hosts
 		fi
+		#Preparación de la BBDD
+  		bash /var/www/html/laboratorio/docker/basedatos.sh >/dev/null 2>&1; docker stop basedatos >/dev/null 2>&1
+  
 
 		echo -e " ${grayColor}[*] Recuerde que debe levantar el servidor apache o ejecutar este script cada vez que quiera utilizar ${endColor}${redColor}SchoolHack${endColor}"
 		sleep 3
