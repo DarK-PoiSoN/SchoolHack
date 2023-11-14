@@ -43,7 +43,7 @@ async function petticionHTTP(a,b){
 			}
 			else {
 				document.getElementById("cargando").style.display = "none";
-				swal("Error", "Ha ocurrido un grave error", "error"); // No se ha ejecutado porque no existe el docker o hubo problemas
+				swal("Error", "Ha ocurrido un error", "error"); // No se ha ejecutado porque no existe el docker o hubo problemas
 			}
 		}
 		else {
@@ -58,13 +58,13 @@ async function petticionHTTP(a,b){
 			}
 			else { // Error
 				document.getElementById("cargando").style.display = "none";
-				swal("Error", "Ha ocurrido un gravisimo error", "error"); // No se ha ejecutado porque no existe el docker o hubo problemas
+				swal("Error", "Ha ocurrido un error", "error"); // No se ha ejecutado porque no existe el docker o hubo problemas
 			}
 		}
     } catch (error) {
         //console.error("Error fetching:", error);
 		document.getElementById("cargando").style.display = "none";
-		swal("Error", "Ha ocurrido un errorfff", "error");
+		swal("Error", "Ha ocurrido un error", "error");
     }
 
 	// Peticion asicrona
